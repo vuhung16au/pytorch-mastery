@@ -6,6 +6,74 @@ This repository is a comprehensive PyTorch learning resource containing document
 
 **Technology Focus**: This repository prioritizes PyTorch for deep learning, with extensive use of Hugging Face transformers for modern NLP and computer vision tasks.
 
+## Repository Context and Learning Goals
+
+### User Background
+- **Previous Experience**: Coming from TensorFlow with basic understanding of Neural Networks and Deep Learning concepts
+- **Learning Objective**: Using this repository as a stepping stone to transition from TensorFlow to PyTorch, specifically targeting NLP applications
+- **End Goal**: Master PyTorch fundamentals to effectively use Hugging Face models for NLP tasks
+
+### Content Policies
+
+#### Example Data and Samples Policy
+**When creating example data, datasets, or sample content, ALWAYS prioritize Australia and Sydney-related examples:**
+
+- **Text Examples**: Use Australian cities (Sydney, Melbourne, Brisbane, Perth, Adelaide), landmarks (Sydney Opera House, Harbour Bridge, Uluru), cultural references
+- **Sample Datasets**: Create examples with Australian context (weather data from Sydney, house prices in Melbourne, tourism data from Gold Coast)
+- **NLP Examples**: Use Australian English spelling and terminology, reference Australian events, places, and culture
+- **Classification Tasks**: Use Australian-specific categories (Australian sports teams, native animals, states/territories)
+- **Named Entity Recognition**: Focus on Australian names, places, organizations
+- **Sentiment Analysis**: Use reviews of Australian restaurants, attractions, services
+
+Examples of preferred content:
+```python
+# Preferred: Australia/Sydney focused examples
+texts = [
+    "The Sydney Opera House is a masterpiece of architecture",
+    "Melbourne's coffee culture is world-renowned", 
+    "The Great Barrier Reef attracts millions of tourists annually",
+    "Bondi Beach is perfect for surfing in summer"
+]
+
+# Sample classification categories
+australian_cities = ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Darwin", "Hobart", "Canberra"]
+aussie_animals = ["kangaroo", "koala", "wombat", "echidna", "platypus", "dingo", "crocodile", "kookaburra"]
+```
+
+#### Multilingual and Translation Policy
+**For any multilingual examples, translation tasks, or language processing involving more than one language, ALWAYS use Vietnamese as the secondary language (alongside English):**
+
+- **Translation Examples**: English ↔ Vietnamese pairs
+- **Multilingual Models**: English-Vietnamese language pairs for training/evaluation
+- **Cross-lingual Tasks**: Compare English and Vietnamese performance
+- **Tokenization Examples**: Demonstrate differences between English and Vietnamese text processing
+- **Code-switching**: Examples mixing English and Vietnamese text
+
+Examples of preferred multilingual content:
+```python
+# Preferred: English-Vietnamese translation pairs
+translation_pairs = [
+    ("Hello, how are you?", "Xin chào, bạn khỏe không?"),
+    ("The Sydney Opera House is beautiful", "Nhà hát Opera Sydney rất đẹp"),
+    ("I love Australian coffee", "Tôi yêu cà phê Úc"),
+    ("Welcome to Melbourne", "Chào mừng đến Melbourne")
+]
+
+# Multilingual sentiment analysis
+multilingual_texts = {
+    'en': ["Sydney beaches are amazing!", "The coffee in Melbourne is terrible"],
+    'vi': ["Bãi biển Sydney thật tuyệt vời!", "Cà phê ở Melbourne rất tệ"]
+}
+```
+
+### Learning Pathway Alignment
+**All content should support the TensorFlow → PyTorch → NLP → Hugging Face learning progression:**
+
+1. **TensorFlow Comparison**: When introducing PyTorch concepts, briefly compare with TensorFlow equivalents
+2. **NLP Focus**: Prioritize NLP examples over computer vision when demonstrating PyTorch concepts  
+3. **Hugging Face Integration**: Show how PyTorch concepts lead naturally to Hugging Face usage
+4. **Practical Applications**: Emphasize real-world NLP tasks and applications
+
 ## Working Effectively
 
 ### Bootstrap the Environment
@@ -645,21 +713,58 @@ python -c "from transformers import AutoTokenizer; print('Transformers OK')"
 python -c "from torch.utils.tensorboard import SummaryWriter; print('TensorBoard OK')"
 python -c "import sys; IS_COLAB = 'google.colab' in sys.modules; IS_KAGGLE = 'kaggle_secrets' in sys.modules; IS_LOCAL = not (IS_COLAB or IS_KAGGLE); assert sum([IS_LOCAL, IS_COLAB, IS_KAGGLE]) == 1; print('Environment detection OK')"
 
-# Test PyTorch functionality
+# Test PyTorch functionality with Australian context
 python -c "
 import torch
 import torch.nn as nn
 
-# Test simple model
-model = nn.Linear(10, 1)
+# Test simple model for Australian city classification
+class AustralianCityClassifier(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc = nn.Linear(10, 8)  # 8 Australian cities
+    def forward(self, x):
+        return self.fc(x)
+
+model = AustralianCityClassifier()
 x = torch.randn(1, 10)
 output = model(x)
-print(f'Model test OK: {output.shape}')
+print(f'Model test OK: {output.shape} (8 Australian cities)')
+print('Australian context model ready!')
+"
+
+# Test multilingual capabilities (English-Vietnamese)
+python -c "
+from transformers import AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained('bert-base-multilingual-cased')
+
+en_text = 'Sydney Opera House is beautiful'
+vi_text = 'Nhà hát Opera Sydney rất đẹp'
+
+en_tokens = tokenizer.tokenize(en_text)
+vi_tokens = tokenizer.tokenize(vi_text)
+
+print(f'English tokens: {len(en_tokens)}')
+print(f'Vietnamese tokens: {len(vi_tokens)}')
+print('Multilingual tokenization OK!')
 "
 
 # Start development environment
 jupyter lab                                        # Interactive development
 tensorboard --logdir ./tensorboard_logs          # View training logs
+
+# Australian NLP quick test
+python -c "
+texts = [
+    'Sydney beaches are perfect for surfing',
+    'Bãi biển Sydney hoàn hảo cho lướt sóng',
+    'Melbourne coffee culture is world-famous',
+    'Văn hóa cà phê Melbourne nổi tiếng thế giới'
+]
+print('Sample Australian multilingual texts ready!')
+for i, text in enumerate(texts):
+    print(f'{i+1}. {text}')
+"
 ```
 
 ## Documentation Standards
@@ -756,41 +861,74 @@ y = linear(x)           # output shape: (32, 5)
 
 ## PyTorch Learning Examples
 
-**ALWAYS prioritize PyTorch examples when creating documentation, tutorials, or example code.**
+**ALWAYS prioritize PyTorch examples when creating documentation, tutorials, or example code. Include TensorFlow comparisons to help with the learning transition.**
 
 ### Common PyTorch Learning Patterns
 
-Use these patterns as standard examples throughout the repository:
+Use these patterns as standard examples throughout the repository, with Australian context and TensorFlow comparisons:
 
 ```python
-# Basic Neural Network Pattern
+# Basic Neural Network Pattern with TensorFlow Comparison
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
-class SimpleNN(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
-        super(SimpleNN, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size)
-        self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(hidden_size, output_size)
+# PyTorch Model Definition (compare with tf.keras.Sequential)
+class AustralianCityClassifier(nn.Module):
+    """
+    Classify text as belonging to different Australian cities.
+    
+    TensorFlow equivalent:
+    model = tf.keras.Sequential([
+        tf.keras.layers.Dense(128, activation='relu', input_shape=(input_size,)),
+        tf.keras.layers.Dense(64, activation='relu'),
+        tf.keras.layers.Dense(len(australian_cities), activation='softmax')
+    ])
+    """
+    def __init__(self, input_size, hidden_size, num_cities):
+        super(AustralianCityClassifier, self).__init__()
+        self.fc1 = nn.Linear(input_size, hidden_size)     # Like tf.keras.layers.Dense
+        self.relu = nn.ReLU()                             # Like activation='relu'
+        self.fc2 = nn.Linear(hidden_size, hidden_size//2)
+        self.fc3 = nn.Linear(hidden_size//2, num_cities)  # Output layer
+        self.softmax = nn.Softmax(dim=1)                  # Like activation='softmax'
     
     def forward(self, x):
-        x = self.fc1(x)
-        x = self.relu(x)
-        x = self.fc2(x)
+        # TensorFlow: automatic forward pass, PyTorch: explicit forward method
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        x = self.fc3(x)  # Note: Don't apply softmax here if using CrossEntropyLoss
         return x
 
-# Model instantiation
-model = SimpleNN(input_size=784, hidden_size=128, output_size=10)
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+# Australian cities for classification
+australian_cities = ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Darwin", "Hobart", "Canberra"]
+
+# Model instantiation (compare with TensorFlow)
+model = AustralianCityClassifier(
+    input_size=768,  # BERT embedding size
+    hidden_size=128, 
+    num_cities=len(australian_cities)
+)
+
+# PyTorch: Explicit loss and optimizer definition
+criterion = nn.CrossEntropyLoss()              # TF: loss='sparse_categorical_crossentropy'
+optimizer = optim.Adam(model.parameters(),     # TF: optimizer='adam'
+                      lr=0.001)
+
+# Key Differences from TensorFlow:
+# - PyTorch: Manual forward/backward pass
+# - TensorFlow: model.fit() handles training loop
+# - PyTorch: Explicit optimizer.zero_grad() and loss.backward()
+# - TensorFlow: Automatic gradient computation
+
+print(f"Model architecture for classifying {len(australian_cities)} Australian cities:")
+print(model)
 ```
 
 ### Hugging Face Integration Examples
 
 ```python
-# Basic Transformer Usage
+# Basic Transformer Usage with Australia/NLP Focus
 from transformers import AutoTokenizer, AutoModel
 import torch
 
@@ -799,56 +937,110 @@ model_name = "bert-base-uncased"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModel.from_pretrained(model_name)
 
-# Tokenize and encode text
-text = "PyTorch makes deep learning accessible"
-inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+# Tokenize and encode Australian-focused text for NLP
+texts = [
+    "The Sydney Opera House attracts tourists from around the world",
+    "Melbourne's laneways are filled with street art and coffee shops",
+    "Nhà hát Opera Sydney thu hút khách du lịch từ khắp nơi trên thế giới"  # Vietnamese translation
+]
 
-# Forward pass
+# Process each text
+for i, text in enumerate(texts):
+    inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+    
+    # Forward pass
+    with torch.no_grad():
+        outputs = model(**inputs)
+        embeddings = outputs.last_hidden_state
+    
+    print(f"Text {i+1}: {text[:50]}...")
+    print(f"Input shape: {inputs['input_ids'].shape}")
+    print(f"Output shape: {embeddings.shape}")
+    print(f"Mean embedding: {embeddings.mean().item():.4f}")
+    print("-" * 50)
+
+# Example: Multilingual comparison (English vs Vietnamese)
+en_text = "Sydney beaches are perfect for surfing"
+vi_text = "Bãi biển Sydney hoàn hảo cho việc lướt sóng"
+
+en_inputs = tokenizer(en_text, return_tensors="pt")
+vi_inputs = tokenizer(vi_text, return_tensors="pt")
+
 with torch.no_grad():
-    outputs = model(**inputs)
-    embeddings = outputs.last_hidden_state
+    en_outputs = model(**en_inputs)
+    vi_outputs = model(**vi_inputs)
 
-print(f"Input shape: {inputs['input_ids'].shape}")
-print(f"Output shape: {embeddings.shape}")
+print(f"English embedding size: {en_outputs.last_hidden_state.shape}")
+print(f"Vietnamese embedding size: {vi_outputs.last_hidden_state.shape}")
 ```
 
 ### Training Loop Template
 
 ```python
-# Standard PyTorch Training Loop
-def train_model(model, train_loader, val_loader, epochs=10):
+# Standard PyTorch Training Loop with TensorFlow Comparison
+def train_australian_sentiment_model(model, train_loader, val_loader, epochs=10):
+    """
+    Train a model for Australian-context sentiment analysis.
+    
+    TensorFlow equivalent would be:
+    model.fit(train_data, epochs=epochs, validation_data=val_data)
+    
+    Key differences:
+    - PyTorch: Manual training loop with explicit forward/backward pass
+    - TensorFlow: Automatic training with model.fit()
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    # Loss and optimizer (similar to TF compile step)
+    criterion = nn.CrossEntropyLoss()                    # TF: loss='sparse_categorical_crossentropy'
+    optimizer = optim.Adam(model.parameters(), lr=0.001) # TF: optimizer='adam'
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     
+    # TensorBoard setup for monitoring (like TF callbacks)
+    from torch.utils.tensorboard import SummaryWriter
+    writer = SummaryWriter('runs/australian_sentiment')
+    
+    print("Training Australian sentiment classifier...")
+    print("Sample texts: 'Sydney beaches are amazing!', 'Melbourne coffee is terrible'")
+    print("Vietnamese: 'Bãi biển Sydney tuyệt vời!', 'Cà phê Melbourne rất tệ'")
+    
     for epoch in range(epochs):
-        # Training phase
-        model.train()
+        # Training phase - Manual loop (vs TF automatic)
+        model.train()  # Set to training mode (like TF training=True)
         train_loss = 0.0
         train_correct = 0
         
         for batch_idx, (data, target) in enumerate(train_loader):
             data, target = data.to(device), target.to(device)
             
+            # Zero gradients (required in PyTorch, automatic in TF)
             optimizer.zero_grad()
+            
+            # Forward pass
             output = model(data)
             loss = criterion(output, target)
+            
+            # Backward pass (explicit in PyTorch)
             loss.backward()
             optimizer.step()
             
+            # Metrics calculation
             train_loss += loss.item()
             pred = output.argmax(dim=1)
             train_correct += pred.eq(target).sum().item()
+            
+            # Log to TensorBoard (like TF callbacks)
+            if batch_idx % 100 == 0:
+                writer.add_scalar('Loss/Train_Batch', loss.item(), 
+                                epoch * len(train_loader) + batch_idx)
         
         # Validation phase
-        model.eval()
+        model.eval()  # Set to evaluation mode (like TF training=False)
         val_loss = 0.0
         val_correct = 0
         
-        with torch.no_grad():
+        with torch.no_grad():  # Disable gradients for inference
             for data, target in val_loader:
                 data, target = data.to(device), target.to(device)
                 output = model(data)
@@ -856,112 +1048,392 @@ def train_model(model, train_loader, val_loader, epochs=10):
                 pred = output.argmax(dim=1)
                 val_correct += pred.eq(target).sum().item()
         
-        # Calculate metrics
+        # Calculate epoch metrics
         train_loss /= len(train_loader)
         train_acc = train_correct / len(train_loader.dataset)
         val_loss /= len(val_loader)
         val_acc = val_correct / len(val_loader.dataset)
         
+        # Update learning rate
         scheduler.step()
+        
+        # Log epoch metrics
+        writer.add_scalar('Loss/Train_Epoch', train_loss, epoch)
+        writer.add_scalar('Loss/Validation', val_loss, epoch)
+        writer.add_scalar('Accuracy/Train', train_acc, epoch)
+        writer.add_scalar('Accuracy/Validation', val_acc, epoch)
         
         print(f'Epoch {epoch+1}/{epochs}:')
         print(f'  Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}')
         print(f'  Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}')
         print(f'  Learning Rate: {optimizer.param_groups[0]["lr"]:.6f}')
+        
+        # Early stopping example (manual in PyTorch, callback in TF)
+        if val_acc > 0.95:
+            print("Early stopping: High accuracy achieved!")
+            break
+    
+    writer.close()
+    print("\nTraining completed! Model can now classify Australian city sentiments.")
+    print("Ready for deployment with Hugging Face pipeline integration.")
 
-# Usage example
-# train_model(model, train_loader, val_loader, epochs=20)
+# Usage example with Australian context
+# train_australian_sentiment_model(model, train_loader, val_loader, epochs=20)
+
+# TensorFlow vs PyTorch Summary:
+print("""
+Key Learning Points (TensorFlow → PyTorch):
+1. Manual training loops vs model.fit()
+2. Explicit gradient handling vs automatic
+3. Device management (.to(device)) vs automatic
+4. Mode switching (train()/eval()) vs implicit
+5. TensorBoard integration similar to TF callbacks
+6. More control but more code required
+""")
 ```
 
 ### Code Templates
 
-**Standard model definition template:**
+**Standard model definition template with TensorFlow comparisons:**
 ```python
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class YourModel(nn.Module):
+class AustralianNLPModel(nn.Module):
     """
-    A custom PyTorch model for [specific task].
+    A custom PyTorch model for Australian NLP tasks with multilingual support.
+    
+    Use cases:
+    - Sentiment analysis of Australian restaurant reviews
+    - Classification of Australian city tourism descriptions
+    - English-Vietnamese translation for Australian content
     
     Args:
-        input_dim (int): Dimension of input features
-        hidden_dim (int): Dimension of hidden layers
-        output_dim (int): Dimension of output
+        vocab_size (int): Size of vocabulary (English + Vietnamese tokens)
+        embed_dim (int): Dimension of embedding layer
+        hidden_dim (int): Dimension of hidden layers  
+        output_dim (int): Number of output classes (e.g., 8 Australian cities)
         dropout_rate (float): Dropout rate for regularization
     
+    TensorFlow equivalent:
+        model = tf.keras.Sequential([
+            tf.keras.layers.Embedding(vocab_size, embed_dim),
+            tf.keras.layers.LSTM(hidden_dim, return_sequences=False),
+            tf.keras.layers.Dropout(dropout_rate),
+            tf.keras.layers.Dense(hidden_dim, activation='relu'),
+            tf.keras.layers.Dense(output_dim, activation='softmax')
+        ])
+    
     Example:
-        >>> model = YourModel(input_dim=784, hidden_dim=256, output_dim=10)
-        >>> x = torch.randn(32, 784)  # batch_size=32
+        >>> australian_cities = ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Darwin", "Hobart", "Canberra"]
+        >>> model = AustralianNLPModel(vocab_size=50000, embed_dim=300, hidden_dim=256, output_dim=len(australian_cities))
+        >>> # Sample input: tokenized text about Australian cities
+        >>> x = torch.randint(0, 50000, (32, 100))  # batch_size=32, seq_len=100
         >>> output = model(x)
-        >>> print(output.shape)  # torch.Size([32, 10])
+        >>> print(output.shape)  # torch.Size([32, 8]) - probabilities for 8 cities
     """
-    def __init__(self, input_dim, hidden_dim, output_dim, dropout_rate=0.1):
-        super(YourModel, self).__init__()
-        self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
-        self.fc3 = nn.Linear(hidden_dim, output_dim)
+    def __init__(self, vocab_size, embed_dim, hidden_dim, output_dim, dropout_rate=0.1):
+        super(AustralianNLPModel, self).__init__()
+        
+        # Embedding layer (like tf.keras.layers.Embedding)
+        self.embedding = nn.Embedding(vocab_size, embed_dim)
+        
+        # LSTM for sequence processing (like tf.keras.layers.LSTM)
+        self.lstm = nn.LSTM(embed_dim, hidden_dim, batch_first=True)
+        
+        # Dropout for regularization
         self.dropout = nn.Dropout(dropout_rate)
+        
+        # Dense layers (like tf.keras.layers.Dense)
+        self.fc1 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, output_dim)
+        
+        # Activation functions
         self.relu = nn.ReLU()
+        
+        # Initialize weights (TensorFlow does this automatically)
+        self._init_weights()
+    
+    def _init_weights(self):
+        """Initialize weights - manual in PyTorch, automatic in TensorFlow"""
+        for name, param in self.named_parameters():
+            if 'weight' in name and len(param.shape) > 1:
+                nn.init.xavier_uniform_(param)
     
     def forward(self, x):
+        # Embedding lookup
+        embedded = self.embedding(x)  # (batch_size, seq_len, embed_dim)
+        
+        # LSTM processing
+        lstm_out, (hidden, cell) = self.lstm(embedded)
+        
+        # Use last hidden state for classification
+        last_hidden = hidden[-1]  # (batch_size, hidden_dim)
+        
+        # Apply dropout and dense layers
+        x = self.dropout(last_hidden)
         x = self.relu(self.fc1(x))
         x = self.dropout(x)
-        x = self.relu(self.fc2(x))
-        x = self.dropout(x)
-        x = self.fc3(x)
+        x = self.fc2(x)  # No softmax here if using CrossEntropyLoss
+        
         return x
+
+# Example usage with Australian context
+australian_cities = ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Darwin", "Hobart", "Canberra"]
+sentiment_labels = ["positive", "negative", "neutral"]
+
+# Model for Australian city classification
+city_classifier = AustralianNLPModel(
+    vocab_size=50000,  # Combined English + Vietnamese vocabulary
+    embed_dim=300,
+    hidden_dim=256,
+    output_dim=len(australian_cities),
+    dropout_rate=0.1
+)
+
+# Model for sentiment analysis
+sentiment_analyzer = AustralianNLPModel(
+    vocab_size=50000,
+    embed_dim=300, 
+    hidden_dim=256,
+    output_dim=len(sentiment_labels),
+    dropout_rate=0.1
+)
+
+print(f"City classifier: {sum(p.numel() for p in city_classifier.parameters())} parameters")
+print(f"Sentiment analyzer: {sum(p.numel() for p in sentiment_analyzer.parameters())} parameters")
 ```
 
-**Standard dataset creation template:**
+**Standard dataset creation template for Australian/Vietnamese NLP:**
 ```python
 from torch.utils.data import Dataset, DataLoader
 import torch
+import pandas as pd
 
-class CustomDataset(Dataset):
+class AustralianMultilingualDataset(Dataset):
     """
-    Custom PyTorch Dataset for [specific data type].
+    Custom PyTorch Dataset for Australian NLP tasks with English-Vietnamese support.
+    
+    Designed for:
+    - Australian tourism content analysis
+    - English-Vietnamese translation pairs
+    - Sentiment analysis of Australian business reviews
+    - Australian city/location classification
     
     Args:
-        data: Input data (numpy array or tensor)
-        labels: Target labels (numpy array or tensor)
+        texts: List of texts (English and/or Vietnamese)
+        labels: List of corresponding labels
+        tokenizer: Tokenizer for text preprocessing (e.g., Hugging Face tokenizer)
+        max_length: Maximum sequence length
         transform: Optional data transformations
     
+    TensorFlow equivalent:
+        dataset = tf.data.Dataset.from_tensor_slices((texts, labels))
+        dataset = dataset.map(preprocess_function)
+        dataset = dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    
     Example:
-        >>> import numpy as np
-        >>> data = np.random.randn(1000, 784)
-        >>> labels = np.random.randint(0, 10, 1000)
-        >>> dataset = CustomDataset(data, labels)
-        >>> dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+        >>> # Australian restaurant reviews in English and Vietnamese
+        >>> texts = [
+        >>>     "The Sydney restaurant serves excellent seafood",
+        >>>     "Nhà hàng ở Sydney phục vụ hải sản tuyệt vời",
+        >>>     "Melbourne coffee shops are overpriced",
+        >>>     "Quán cà phê Melbourne đắt quá"
+        >>> ]
+        >>> labels = [1, 1, 0, 0]  # 1=positive, 0=negative
+        >>> dataset = AustralianMultilingualDataset(texts, labels, tokenizer)
+        >>> dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
     """
-    def __init__(self, data, labels, transform=None):
-        self.data = torch.FloatTensor(data)
-        self.labels = torch.LongTensor(labels)
+    def __init__(self, texts, labels, tokenizer=None, max_length=512, transform=None):
+        self.texts = texts
+        self.labels = torch.LongTensor(labels) if isinstance(labels, list) else labels
+        self.tokenizer = tokenizer
+        self.max_length = max_length
         self.transform = transform
+        
+        # Sample Australian context data for demonstration
+        self.australian_contexts = {
+            'cities': ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Darwin", "Hobart", "Canberra"],
+            'landmarks': ["Opera House", "Harbour Bridge", "Uluru", "Great Barrier Reef"],
+            'en_vi_pairs': [
+                ("Sydney beaches are beautiful", "Bãi biển Sydney rất đẹp"),
+                ("Melbourne has great coffee", "Melbourne có cà phê tuyệt vời"),
+                ("Perth is sunny year-round", "Perth nắng quanh năm"),
+                ("Brisbane river is scenic", "Sông Brisbane rất đẹp")
+            ]
+        }
     
     def __len__(self):
-        return len(self.data)
+        return len(self.texts)
     
     def __getitem__(self, idx):
-        sample = self.data[idx]
+        text = self.texts[idx]
         label = self.labels[idx]
         
-        if self.transform:
-            sample = self.transform(sample)
+        # Tokenization for NLP (key difference from TensorFlow approach)
+        if self.tokenizer:
+            # Hugging Face tokenizer integration
+            encoding = self.tokenizer(
+                text,
+                truncation=True,
+                padding='max_length',
+                max_length=self.max_length,
+                return_tensors='pt'
+            )
+            
+            return {
+                'input_ids': encoding['input_ids'].squeeze(),
+                'attention_mask': encoding['attention_mask'].squeeze(),
+                'labels': label
+            }
+        else:
+            # Simple character-level encoding for basic examples
+            # Convert text to tensor (simplified approach)
+            text_tensor = torch.tensor([ord(c) for c in text[:self.max_length]], dtype=torch.long)
+            
+            # Pad if necessary
+            if len(text_tensor) < self.max_length:
+                padding = torch.zeros(self.max_length - len(text_tensor), dtype=torch.long)
+                text_tensor = torch.cat([text_tensor, padding])
         
-        return sample, label
+        if self.transform:
+            text_tensor = self.transform(text_tensor)
+        
+        return text_tensor, label
 
-# Create DataLoader
-def create_dataloader(dataset, batch_size=32, shuffle=True, num_workers=0):
-    """Create a PyTorch DataLoader with standard settings."""
+# Create DataLoader with Australian context
+def create_australian_dataloader(texts, labels, tokenizer=None, batch_size=32, shuffle=True, num_workers=0):
+    """
+    Create a PyTorch DataLoader for Australian NLP tasks.
+    
+    TensorFlow equivalent:
+        dataset = tf.data.Dataset.from_tensor_slices((texts, labels))
+        dataset = dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
+    
+    Args:
+        texts: List of texts (mix of English and Vietnamese)
+        labels: Corresponding labels
+        tokenizer: Optional Hugging Face tokenizer
+        batch_size: Batch size for training
+        shuffle: Whether to shuffle data
+        num_workers: Number of worker processes
+    """
+    dataset = AustralianMultilingualDataset(texts, labels, tokenizer)
+    
     return DataLoader(
         dataset, 
         batch_size=batch_size, 
         shuffle=shuffle, 
         num_workers=num_workers,
-        pin_memory=torch.cuda.is_available()
+        pin_memory=torch.cuda.is_available(),  # GPU optimization
+        collate_fn=None  # Custom collation if needed
     )
+
+# Example usage
+if __name__ == "__main__":
+    # Sample Australian tourism data (English + Vietnamese)
+    sample_texts = [
+        "Sydney Opera House is a UNESCO World Heritage site",
+        "Nhà hát Opera Sydney là di sản thế giới UNESCO",
+        "Melbourne's coffee culture is internationally renowned", 
+        "Văn hóa cà phê Melbourne nổi tiếng quốc tế",
+        "The Great Barrier Reef needs protection",
+        "Rạn san hô Great Barrier Reef cần được bảo vệ"
+    ]
+    
+    sample_labels = [1, 1, 1, 1, 0, 0]  # Tourism positive=1, Environmental concern=0
+    
+    # Create dataset and dataloader
+    dataloader = create_australian_dataloader(
+        sample_texts, 
+        sample_labels, 
+        batch_size=2, 
+        shuffle=True
+    )
+    
+    print("Sample Australian multilingual dataset created!")
+    print(f"Number of batches: {len(dataloader)}")
+    
+    # Test iteration
+    for batch_idx, (batch_texts, batch_labels) in enumerate(dataloader):
+        print(f"Batch {batch_idx}: {batch_texts.shape}, labels: {batch_labels}")
+        break
 ```
 
 Remember: This is an educational repository focused on learning PyTorch concepts. Always prioritize working examples, clear documentation, and educational value over complex optimizations.
+
+## TensorFlow to PyTorch Transition Guide
+
+### Key Differences Summary
+This section helps users transitioning from TensorFlow to understand PyTorch's approach:
+
+| Concept | TensorFlow | PyTorch |
+|---------|------------|---------|
+| **Model Definition** | `tf.keras.Sequential` or Functional API | `nn.Module` subclass with `__init__` and `forward` |
+| **Training Loop** | `model.fit()` | Manual loop with `optimizer.zero_grad()`, `loss.backward()`, `optimizer.step()` |
+| **Automatic Differentiation** | `tf.GradientTape` (eager) or automatic | `loss.backward()` on any scalar tensor |
+| **Device Management** | Mostly automatic with strategy | Explicit `.to(device)` calls |
+| **Execution** | Graph mode (TF 1.x) or Eager (TF 2.x) | Always eager (dynamic graphs) |
+| **Model Modes** | Implicit training/inference | Explicit `model.train()` / `model.eval()` |
+
+### Learning Path Alignment
+
+#### Phase 1: PyTorch Fundamentals (Weeks 1-2)
+Focus on core PyTorch concepts with Australian examples:
+- Tensor operations and autograd
+- Building neural networks with `nn.Module`
+- Manual training loops vs TensorFlow's `model.fit()`
+- Data loading with Australian tourism/restaurant datasets
+
+#### Phase 2: NLP Transition (Weeks 3-4)
+Apply PyTorch to NLP tasks using Australian content:
+- Text preprocessing and tokenization
+- Embedding layers and sequence models (LSTM/GRU)
+- Attention mechanisms
+- English-Vietnamese translation examples
+
+#### Phase 3: Hugging Face Integration (Weeks 5-6)
+Bridge PyTorch knowledge to modern NLP:
+- `transformers` library integration
+- Fine-tuning pre-trained models on Australian content
+- Australian city classification with BERT
+- Multilingual models for English-Vietnamese tasks
+
+#### Phase 4: Real-world Applications (Weeks 7-8)
+Deploy knowledge in practical scenarios:
+- Australian tourism sentiment analysis
+- Multi-language customer review processing
+- Real-time text classification APIs
+- Model optimization and deployment
+
+### Australian NLP Use Cases Roadmap
+
+1. **Text Classification**: Australian city tourism reviews
+2. **Sentiment Analysis**: Restaurant reviews in Sydney/Melbourne
+3. **Named Entity Recognition**: Australian landmarks and locations  
+4. **Translation**: English-Vietnamese pairs for Australian content
+5. **Question Answering**: Tourism FAQs about Australian destinations
+6. **Text Generation**: Australian travel recommendations
+
+### Vietnamese Language Integration
+
+For all multilingual examples, follow these patterns:
+
+```python
+# Standard English-Vietnamese example structure
+multilingual_examples = {
+    'text_classification': {
+        'en': ["Sydney beaches are amazing", "Melbourne coffee is expensive"],
+        'vi': ["Bãi biển Sydney tuyệt vời", "Cà phê Melbourne đắt"]
+    },
+    'sentiment_pairs': [
+        ("Love the Sydney Opera House!", "Yêu Nhà hát Opera Sydney!", "positive"),
+        ("Brisbane weather is too hot", "Thời tiết Brisbane quá nóng", "negative")
+    ],
+    'translation_tasks': [
+        ("source": "Welcome to Australia", "target": "Chào mừng đến Australia"),
+        ("source": "Visit beautiful Sydney", "target": "Thăm Sydney xinh đẹp")
+    ]
+}
+```
