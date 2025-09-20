@@ -368,6 +368,457 @@ print(f"CUDA available: {torch.cuda.is_available()}")
 - **Error Prevention**: Prevents common environment-specific issues
 - **Consistent Experience**: Same notebook works across all platforms
 
+### PyTorch Device Handling Policy
+
+**ALL notebooks must implement intelligent device detection to automatically utilize available hardware acceleration (CUDA, MPS) while providing robust CPU fallback.**
+
+#### Device Detection Priority Order
+
+**Required device detection sequence for all PyTorch notebooks:**
+
+1. **CUDA (NVIDIA GPUs)** - Check first for NVIDIA GPU acceleration
+2. **MPS (Apple Silicon)** - Check for Apple Metal Performance Shaders
+3. **CPU (Fallback)** - Always available fallback option
+
+#### Standard Device Detection Function
+
+**Include this function in every PyTorch notebook:**
+
+```python
+import torch
+import platform
+
+def detect_device():
+    """
+    Detect the best available PyTorch device with comprehensive hardware support.
+    
+    Priority order:
+    1. CUDA (NVIDIA GPUs) - Best performance for deep learning
+    2. MPS (Apple Silicon) - Optimized for M1/M2/M3 Macs  
+    3. CPU (Universal) - Always available fallback
+    
+    Returns:
+        torch.device: The optimal device for PyTorch operations
+        str: Human-readable device description for logging
+    """
+    # Check for CUDA (NVIDIA GPU)
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+        gpu_name = torch.cuda.get_device_name(0)
+        device_info = f"CUDA GPU: {gpu_name}"
+        
+        # Additional CUDA info for optimization
+        cuda_version = torch.version.cuda
+        gpu_memory = torch.cuda.get_device_properties(0).total_memory / 1024**3
+        
+        print(f"🚀 Using CUDA acceleration")
+        print(f"   GPU: {gpu_name}")
+        print(f"   CUDA Version: {cuda_version}")
+        print(f"   GPU Memory: {gpu_memory:.1f} GB")
+        
+        return device, device_info
+    
+    # Check for MPS (Apple Silicon)
+    elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+        device = torch.device("mps")
+        device_info = "Apple Silicon MPS"
+        
+        # Get system info for Apple Silicon
+        system_info = platform.uname()
+        
+        print(f"🍎 Using Apple Silicon MPS acceleration")
+        print(f"   System: {system_info.system} {system_info.release}")
+        print(f"   Machine: {system_info.machine}")
+        print(f"   Processor: {system_info.processor}")
+        
+        return device, device_info
+    
+    # Fallback to CPU
+    else:
+        device = torch.device("cpu")
+        device_info = "CPU (No GPU acceleration available)"
+        
+        # Get CPU info for optimization guidance
+        cpu_count = torch.get_num_threads()
+        system_info = platform.uname()
+        
+        print(f"💻 Using CPU (no GPU acceleration detected)")
+        print(f"   Processor: {system_info.processor}")
+        print(f"   PyTorch Threads: {cpu_count}")
+        print(f"   System: {system_info.system} {system_info.release}")
+        
+        # Provide optimization suggestions for CPU-only setups
+        print(f"\n💡 CPU Optimization Tips:")
+        print(f"   • Reduce batch size to prevent memory issues")
+        print(f"   • Consider using smaller models for faster training")
+        print(f"   • Enable PyTorch optimizations: torch.set_num_threads({cpu_count})")
+        
+        return device, device_info
+
+# Usage in all PyTorch notebooks
+device, device_info = detect_device()
+print(f"\n✅ PyTorch device selected: {device}")
+print(f"📊 Device info: {device_info}")
+
+# Set global device for the notebook
+DEVICE = device
+```
+
+#### Device-Aware Model and Data Handling
+
+**All PyTorch models and tensors must be properly moved to the detected device:**
+
+```python
+import torch
+import torch.nn as nn
+
+# Example: Australian City Classifier with device handling
+class AustralianCityClassifier(nn.Module):
+    """Device-aware PyTorch model for Australian city classification."""
+    
+    def __init__(self, input_size, hidden_size, num_cities, device=None):
+        super(AustralianCityClassifier, self).__init__()
+        
+        # Store device for internal use
+        self.device = device if device is not None else detect_device()[0]
+        
+        # Define layers
+        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.2)
+        self.fc2 = nn.Linear(hidden_size, hidden_size//2)
+        self.fc3 = nn.Linear(hidden_size//2, num_cities)
+        
+        # Move model to device immediately after creation
+        self.to(self.device)
+        
+        print(f"📱 Model initialized on device: {self.device}")
+    
+    def forward(self, x):
+        # Ensure input is on the correct device
+        if x.device != self.device:
+            x = x.to(self.device)
+        
+        x = self.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = self.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+    
+    def predict(self, x):
+        """Device-aware prediction method."""
+        self.eval()
+        with torch.no_grad():
+            # Ensure input is on correct device
+            if not isinstance(x, torch.Tensor):
+                x = torch.tensor(x, dtype=torch.float32)
+            x = x.to(self.device)
+            
+            output = self.forward(x)
+            predictions = torch.softmax(output, dim=-1)
+            return predictions.cpu().numpy()  # Return on CPU for general use
+
+# Australian cities for classification
+australian_cities = ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Darwin", "Hobart", "Canberra"]
+
+# Create device-aware model
+model = AustralianCityClassifier(
+    input_size=768,  # BERT embedding size
+    hidden_size=256,
+    num_cities=len(australian_cities),
+    device=DEVICE
+)
+
+# Verify model is on correct device
+print(f"🔧 Model device: {next(model.parameters()).device}")
+print(f"🎯 Expected device: {DEVICE}")
+```
+
+#### Device-Aware Training Loop
+
+**Training loops must handle device placement for all tensors:**
+
+```python
+def train_australian_model_device_aware(model, train_loader, val_loader, epochs=10, device=None):
+    """
+    Device-aware training loop for Australian NLP models.
+    
+    Automatically handles CUDA, MPS, and CPU training with optimal performance.
+    """
+    if device is None:
+        device, device_info = detect_device()
+    
+    # Ensure model is on correct device
+    model = model.to(device)
+    
+    # Device-specific optimizations
+    if device.type == 'cuda':
+        # CUDA-specific optimizations
+        torch.backends.cudnn.benchmark = True  # Optimize for consistent input sizes
+        print("🔧 CUDA optimizations enabled")
+    elif device.type == 'mps':
+        # MPS-specific considerations
+        print("🔧 MPS device detected - optimizing for Apple Silicon")
+    else:
+        # CPU optimizations
+        torch.set_num_threads(torch.get_num_threads())
+        print(f"🔧 CPU optimization: Using {torch.get_num_threads()} threads")
+    
+    # Setup loss and optimizer
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    
+    # TensorBoard setup with device info in logs
+    from torch.utils.tensorboard import SummaryWriter
+    log_dir = f"runs/australian_city_classifier_{device.type}"
+    writer = SummaryWriter(log_dir)
+    
+    print(f"🏃‍♂️ Starting training on {device} ({device_info})")
+    print(f"📊 TensorBoard logs: {log_dir}")
+    
+    for epoch in range(epochs):
+        model.train()
+        train_loss = 0.0
+        train_correct = 0
+        
+        for batch_idx, (data, target) in enumerate(train_loader):
+            # Move data to device - CRITICAL for device compatibility
+            data, target = data.to(device), target.to(device)
+            
+            optimizer.zero_grad()
+            output = model(data)
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.step()
+            
+            train_loss += loss.item()
+            pred = output.argmax(dim=1, keepdim=True)
+            train_correct += pred.eq(target.view_as(pred)).sum().item()
+            
+            # Log device-specific metrics
+            if batch_idx % 100 == 0:
+                writer.add_scalar('Loss/Train_Batch', loss.item(), epoch * len(train_loader) + batch_idx)
+                
+                # Device-specific memory monitoring
+                if device.type == 'cuda':
+                    gpu_memory_used = torch.cuda.memory_allocated(device) / 1024**3
+                    gpu_memory_cached = torch.cuda.memory_reserved(device) / 1024**3
+                    writer.add_scalar('Memory/GPU_Used_GB', gpu_memory_used, epoch * len(train_loader) + batch_idx)
+                    writer.add_scalar('Memory/GPU_Cached_GB', gpu_memory_cached, epoch * len(train_loader) + batch_idx)
+        
+        # Validation loop with device handling
+        model.eval()
+        val_loss = 0.0
+        val_correct = 0
+        
+        with torch.no_grad():
+            for data, target in val_loader:
+                data, target = data.to(device), target.to(device)  # Ensure validation data is on device
+                output = model(data)
+                val_loss += criterion(output, target).item()
+                pred = output.argmax(dim=1, keepdim=True)
+                val_correct += pred.eq(target.view_as(pred)).sum().item()
+        
+        # Calculate metrics
+        train_loss /= len(train_loader)
+        train_acc = train_correct / len(train_loader.dataset)
+        val_loss /= len(val_loader)
+        val_acc = val_correct / len(val_loader.dataset)
+        
+        # Log epoch metrics
+        writer.add_scalar('Loss/Train', train_loss, epoch)
+        writer.add_scalar('Loss/Validation', val_loss, epoch)
+        writer.add_scalar('Accuracy/Train', train_acc, epoch)
+        writer.add_scalar('Accuracy/Validation', val_acc, epoch)
+        
+        # Device-specific performance monitoring
+        if device.type == 'cuda':
+            writer.add_scalar('Device/GPU_Utilization', torch.cuda.utilization(), epoch)
+        
+        print(f'Epoch {epoch+1}/{epochs}: Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}, Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}')
+        print(f'  Device: {device}, Memory: {get_device_memory_info(device)}')
+    
+    writer.close()
+    return model
+
+def get_device_memory_info(device):
+    """Get memory information for the current device."""
+    if device.type == 'cuda':
+        allocated = torch.cuda.memory_allocated(device) / 1024**3
+        reserved = torch.cuda.memory_reserved(device) / 1024**3
+        return f"GPU {allocated:.1f}GB/{reserved:.1f}GB"
+    elif device.type == 'mps':
+        return "MPS (memory monitoring not available)"
+    else:
+        import psutil
+        memory = psutil.virtual_memory()
+        return f"RAM {memory.percent}% used"
+```
+
+#### Device Compatibility Best Practices
+
+**Required practices for all PyTorch notebooks:**
+
+1. **Always call `detect_device()` at the start of notebooks**
+2. **Move models to device immediately after creation**: `model.to(device)`
+3. **Move data to device in training loops**: `data, target = data.to(device), target.to(device)`
+4. **Handle device mismatches in custom functions**
+5. **Use device-specific optimizations when available**
+6. **Monitor device memory usage during training**
+7. **Provide clear error messages for device-related issues**
+
+#### Platform-Specific Considerations
+
+**CUDA (NVIDIA GPUs):**
+```python
+# CUDA-specific optimizations and monitoring
+if device.type == 'cuda':
+    # Enable cuDNN benchmark for consistent input sizes
+    torch.backends.cudnn.benchmark = True
+    
+    # Monitor GPU memory
+    print(f"GPU Memory: {torch.cuda.memory_allocated()/1024**3:.1f}GB / {torch.cuda.memory_reserved()/1024**3:.1f}GB")
+    
+    # Clear cache if needed
+    if torch.cuda.memory_allocated() / torch.cuda.memory_reserved() > 0.9:
+        torch.cuda.empty_cache()
+```
+
+**MPS (Apple Silicon):**
+```python
+# MPS-specific considerations and optimizations
+if device.type == 'mps':
+    # MPS fallback for unsupported operations
+    try:
+        result = some_operation(tensor.to(device))
+    except RuntimeError as e:
+        if "mps" in str(e).lower():
+            print("⚠️  MPS operation not supported, falling back to CPU")
+            result = some_operation(tensor.to('cpu')).to(device)
+        else:
+            raise e
+```
+
+**CPU (Fallback):**
+```python
+# CPU optimizations for better performance
+if device.type == 'cpu':
+    # Optimize thread usage
+    torch.set_num_threads(torch.get_num_threads())
+    
+    # Use smaller batch sizes to prevent memory issues
+    recommended_batch_size = 16 if original_batch_size > 32 else original_batch_size
+    print(f"💡 CPU mode: Consider reducing batch size to {recommended_batch_size}")
+```
+
+#### Error Handling and Troubleshooting
+
+**Common device-related error patterns and solutions:**
+
+```python
+def safe_to_device(tensor, device, tensor_name="tensor"):
+    """Safely move tensor to device with error handling."""
+    try:
+        return tensor.to(device)
+    except RuntimeError as e:
+        if "CUDA out of memory" in str(e):
+            print(f"❌ CUDA out of memory for {tensor_name}")
+            print(f"   Tensor shape: {tensor.shape}")
+            print(f"   Tensor dtype: {tensor.dtype}")
+            print(f"💡 Try reducing batch size or using gradient accumulation")
+            torch.cuda.empty_cache()
+            raise e
+        elif "MPS" in str(e):
+            print(f"⚠️  MPS error for {tensor_name}, falling back to CPU")
+            return tensor.to('cpu')
+        else:
+            print(f"❌ Device error for {tensor_name}: {e}")
+            raise e
+
+# Usage in training loops
+try:
+    data, target = safe_to_device(data, device, "input_data"), safe_to_device(target, device, "labels")
+    output = model(data)
+except RuntimeError as e:
+    print(f"Training step failed: {e}")
+    continue  # Skip this batch and continue training
+```
+
+#### Device Detection Testing
+
+**Include device detection validation in all notebooks:**
+
+```python
+def test_device_functionality():
+    """Test basic PyTorch operations on the detected device."""
+    device, device_info = detect_device()
+    
+    print(f"🧪 Testing device functionality: {device}")
+    
+    try:
+        # Test basic tensor operations
+        x = torch.randn(100, 100).to(device)
+        y = torch.randn(100, 100).to(device)
+        z = torch.matmul(x, y)
+        
+        # Test neural network operations
+        layer = nn.Linear(100, 50).to(device)
+        output = layer(x)
+        
+        # Test gradient computation
+        loss = output.mean()
+        loss.backward()
+        
+        print(f"✅ Device {device} is working correctly!")
+        print(f"   Matrix multiplication: {z.shape}")
+        print(f"   Neural network forward: {output.shape}")
+        print(f"   Gradient computation: ✓")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Device {device} test failed: {e}")
+        print(f"💡 Consider falling back to CPU or checking device compatibility")
+        return False
+
+# Run device test at start of notebook
+device_test_passed = test_device_functionality()
+if not device_test_passed:
+    print("⚠️  Device test failed - some operations may not work as expected")
+```
+
+#### Australian Context Examples with Device Handling
+
+**Example: Australian tourism sentiment analysis with device awareness:**
+
+```python
+# Australian tourism dataset with device-aware processing
+australian_texts = [
+    "Sydney Opera House is absolutely stunning! Worth every dollar.",
+    "Nhà hát Opera Sydney thật tuyệt vời! Xứng đáng từng đồng.",
+    "Melbourne coffee is overpriced and disappointing.",
+    "Cà phê Melbourne đắt quá và thất vọng.",
+    "Gold Coast beaches are perfect for families.",
+    "Bãi biển Gold Coast hoàn hảo cho gia đình."
+]
+
+# Convert to tensors and move to device
+def prepare_australian_data(texts, tokenizer, device):
+    """Prepare Australian tourism data with proper device handling."""
+    encoded = tokenizer(texts, padding=True, truncation=True, return_tensors='pt')
+    
+    # Move all tensor data to device
+    return {k: v.to(device) for k, v in encoded.items()}
+
+# Device-aware processing
+device, _ = detect_device()
+inputs = prepare_australian_data(australian_texts, tokenizer, device)
+
+print(f"📊 Australian tourism data prepared on {device}")
+print(f"   Input shape: {inputs['input_ids'].shape}")
+print(f"   Device location: {inputs['input_ids'].device}")
+```
+
 ## Validation Scenarios
 
 ### Always Test These Scenarios After Making Changes:
@@ -545,7 +996,130 @@ print(f"CUDA available: {torch.cuda.is_available()}")
    "
    ```
 
-**Manual Validation Requirement**: After any significant changes, run all eight validation tests to ensure the environment remains functional.
+9. **Device Detection and Compatibility Test** (should complete in 2-3 seconds):
+   ```bash
+   python -c "
+   import torch
+   import platform
+   
+   def detect_device_test():
+       # Test CUDA detection
+       cuda_available = torch.cuda.is_available()
+       print(f'CUDA available: {cuda_available}')
+       if cuda_available:
+           print(f'CUDA device count: {torch.cuda.device_count()}')
+           print(f'CUDA device name: {torch.cuda.get_device_name(0)}')
+           print(f'CUDA version: {torch.version.cuda}')
+       
+       # Test MPS detection (Apple Silicon)
+       mps_available = hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()
+       print(f'MPS available: {mps_available}')
+       if mps_available:
+           print(f'MPS backend built: {torch.backends.mps.is_built()}')
+       
+       # Determine optimal device
+       if cuda_available:
+           device = torch.device('cuda')
+           device_name = 'CUDA GPU'
+       elif mps_available:
+           device = torch.device('mps')
+           device_name = 'Apple Silicon MPS'
+       else:
+           device = torch.device('cpu')
+           device_name = 'CPU'
+       
+       print(f'Selected device: {device} ({device_name})')
+       
+       # Test basic operations on selected device
+       try:
+           x = torch.randn(10, 10).to(device)
+           y = torch.randn(10, 10).to(device)
+           z = torch.matmul(x, y)
+           print(f'Device operations test: PASSED')
+           print(f'Result tensor device: {z.device}')
+           return True
+       except Exception as e:
+           print(f'Device operations test: FAILED - {e}')
+           return False
+   
+   # Run device detection test
+   success = detect_device_test()
+   print(f'\\nDevice detection test: {'PASSED' if success else 'FAILED'}')
+   
+   # Test device fallback mechanism
+   try:
+       # This should work on any device
+       model = torch.nn.Linear(5, 1)
+       if torch.cuda.is_available():
+           model = model.cuda()
+           test_input = torch.randn(1, 5).cuda()
+       elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+           model = model.to('mps')
+           test_input = torch.randn(1, 5).to('mps')
+       else:
+           test_input = torch.randn(1, 5)
+       
+       output = model(test_input)
+       print(f'Device fallback test: PASSED')
+       print(f'Model device: {next(model.parameters()).device}')
+       print(f'Output device: {output.device}')
+   except Exception as e:
+       print(f'Device fallback test: FAILED - {e}')
+   
+   print('Device compatibility validation completed!')
+   "
+   ```
+
+10. **Device Memory and Performance Test** (should complete in 3-5 seconds):
+    ```bash
+    python -c "
+    import torch
+    import time
+    
+    def test_device_performance():
+        devices_to_test = []
+        
+        # Add available devices
+        if torch.cuda.is_available():
+            devices_to_test.append(('cuda', torch.device('cuda')))
+        if hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+            devices_to_test.append(('mps', torch.device('mps')))
+        devices_to_test.append(('cpu', torch.device('cpu')))
+        
+        print('Testing performance across available devices:')
+        
+        for device_name, device in devices_to_test:
+            try:
+                # Test matrix multiplication performance
+                x = torch.randn(1000, 1000).to(device)
+                y = torch.randn(1000, 1000).to(device)
+                
+                start_time = time.time()
+                z = torch.matmul(x, y)
+                if device.type != 'cpu':
+                    torch.cuda.synchronize() if device.type == 'cuda' else None
+                end_time = time.time()
+                
+                duration = end_time - start_time
+                print(f'  {device_name.upper()}: {duration:.3f}s for 1000x1000 matmul')
+                
+                # Test memory allocation
+                if device.type == 'cuda':
+                    memory_allocated = torch.cuda.memory_allocated(device) / 1024**2
+                    memory_reserved = torch.cuda.memory_reserved(device) / 1024**2
+                    print(f'    GPU Memory: {memory_allocated:.1f}MB allocated, {memory_reserved:.1f}MB reserved')
+                    torch.cuda.empty_cache()
+                
+            except Exception as e:
+                print(f'  {device_name.upper()}: ERROR - {e}')
+        
+        print('Device performance test completed!')
+    
+    test_device_performance()
+    "
+    ```
+
+**Manual Validation Requirement**: After any significant changes, run all ten validation tests to ensure the environment remains functional.
 
 ## Repository Structure and Navigation
 
@@ -643,9 +1217,19 @@ print(f"CUDA available: {torch.cuda.is_available()}")
 ### PyTorch-Specific Issues:
 - **Model not training**: Check if model is in training mode with `model.train()`
 - **Gradient issues**: Verify `optimizer.zero_grad()` is called before `loss.backward()`
-- **Device mismatches**: Ensure model and data are on the same device (CPU/GPU)
+- **Device mismatches**: Ensure model and data are on the same device (CPU/GPU/MPS)
 - **Memory leaks**: Use `torch.no_grad()` for inference and clear unused variables
 - **NaN losses**: Check learning rate, gradient clipping, and data normalization
+
+### Device-Specific Issues:
+- **CUDA out of memory**: Reduce batch size, use gradient accumulation, or clear cache with `torch.cuda.empty_cache()`
+- **CUDA device mismatch**: Ensure all tensors and models are on the same GPU with `.to(device)`
+- **MPS not available on Intel Macs**: MPS only works on Apple Silicon (M1/M2/M3) - will automatically fallback to CPU
+- **MPS operation not supported**: Some PyTorch operations don't support MPS yet - implement CPU fallback
+- **CPU performance slow**: Reduce batch size, use smaller models, optimize thread count with `torch.set_num_threads()`
+- **Device detection fails**: Verify PyTorch installation includes proper GPU support (CUDA/MPS packages)
+- **Mixed device errors**: Use the `safe_to_device()` function pattern to handle device placement errors
+- **Memory monitoring inaccurate**: CUDA memory reporting is most accurate; MPS and CPU monitoring may be limited
 
 ### TensorBoard Issues:
 - **Log directory permissions**: Ensure write permissions for the log directory
@@ -684,12 +1268,17 @@ print(f"CUDA available: {torch.cuda.is_available()}")
 - **Standardized callback configuration** - Use consistent TensorBoard logging settings across notebooks
 
 ### PyTorch Best Practices:
-- Use `torch.device` for device-agnostic code
-- Implement proper data loaders with appropriate batch sizes
-- Use model checkpointing for long training runs
-- Implement early stopping to prevent overfitting
-- Use learning rate schedulers for better convergence
-- Profile code using PyTorch profiler for performance optimization
+- **Device Management**: Always use the `detect_device()` function and move models/data to the detected device
+- Use `torch.device` for device-agnostic code and explicit device management
+- Implement proper data loaders with appropriate batch sizes for your target device
+- Use model checkpointing for long training runs with device state preservation
+- Implement early stopping to prevent overfitting and reduce unnecessary compute
+- Use learning rate schedulers for better convergence across different device types
+- Profile code using PyTorch profiler for performance optimization on target devices
+- **CUDA Optimizations**: Enable `torch.backends.cudnn.benchmark = True` for consistent input sizes
+- **MPS Considerations**: Implement CPU fallbacks for unsupported MPS operations
+- **CPU Optimization**: Use appropriate thread counts and smaller batch sizes for CPU-only training
+- **Memory Management**: Monitor device memory usage and implement garbage collection strategies
 
 ## Limitations and Known Issues
 
@@ -712,6 +1301,35 @@ python -c "import torch; print(f'PyTorch {torch.__version__}, CUDA: {torch.cuda.
 python -c "from transformers import AutoTokenizer; print('Transformers OK')"
 python -c "from torch.utils.tensorboard import SummaryWriter; print('TensorBoard OK')"
 python -c "import sys; IS_COLAB = 'google.colab' in sys.modules; IS_KAGGLE = 'kaggle_secrets' in sys.modules; IS_LOCAL = not (IS_COLAB or IS_KAGGLE); assert sum([IS_LOCAL, IS_COLAB, IS_KAGGLE]) == 1; print('Environment detection OK')"
+
+# Device detection and compatibility check
+python -c "
+import torch
+import platform
+
+# Test comprehensive device detection
+cuda_available = torch.cuda.is_available()
+mps_available = hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()
+
+print(f'Device Detection Results:')
+print(f'  CUDA (NVIDIA): {cuda_available}')
+print(f'  MPS (Apple Silicon): {mps_available}')
+
+if cuda_available:
+    device = torch.device('cuda')
+    print(f'  Selected: CUDA - {torch.cuda.get_device_name(0)}')
+elif mps_available:
+    device = torch.device('mps')
+    print(f'  Selected: MPS - Apple Silicon')
+else:
+    device = torch.device('cpu')
+    print(f'  Selected: CPU - {platform.processor()}')
+
+# Test device functionality
+x = torch.randn(100, 100).to(device)
+y = torch.matmul(x, x.t())
+print(f'✅ Device {device} working correctly!')
+"
 
 # Test PyTorch functionality with Australian context
 python -c "
@@ -990,6 +1608,10 @@ def train_australian_sentiment_model(model, train_loader, val_loader, epochs=10)
     - TensorFlow: Automatic training with model.fit()
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    
+    # Use the standardized device detection instead
+    device, device_info = detect_device()
     model.to(device)
     
     # Loss and optimizer (similar to TF compile step)
