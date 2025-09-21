@@ -18,7 +18,7 @@ The goal is to learn basic NLP with PyTorch through hands-on examples that demon
 ## Notebooks Overview
 
 ### 1. 📚 Deep Learning NLP Foundations
-**File**: `deep_learning_nlp.ipynb`
+**File**: `01_deep_learning_nlp.ipynb`
 
 Introduction to deep learning concepts for NLP using PyTorch with Australian examples.
 
@@ -35,7 +35,7 @@ Introduction to deep learning concepts for NLP using PyTorch with Australian exa
 - Compare PyTorch vs TensorFlow approaches for NLP
 
 ### 2. 🔤 Word Embeddings
-**File**: `word_embeddings_nllp.ipynb`
+**File**: `02_word_embeddings_nllp.ipynb`
 
 Comprehensive guide to word embeddings with Australian context and multilingual support.
 
@@ -52,7 +52,7 @@ Comprehensive guide to word embeddings with Australian context and multilingual 
 - Visualize semantic relationships in Australian tourism vocabulary
 
 ### 3. 🔄 Sequence Models
-**File**: `sequence_models_nlp.ipynb`
+**File**: `03_sequence_models_nlp.ipynb`
 
 Advanced sequence modeling with LSTM and GRU networks for Australian NLP applications.
 
@@ -69,7 +69,7 @@ Advanced sequence modeling with LSTM and GRU networks for Australian NLP applica
 - Implement attention mechanisms for better performance
 
 ### 4. 🚀 Advanced NLP Techniques
-**File**: `advanced_nlp.ipynb`
+**File**: `04_advanced_nlp.ipynb`
 
 State-of-the-art NLP techniques including Bi-LSTM CRF for complex sequence labeling.
 
@@ -197,25 +197,25 @@ All notebooks include intelligent device detection:
 ## 🎯 Learning Path Progression
 
 ### Phase 1: PyTorch NLP Foundations (Week 1)
-- Complete `deep_learning_nlp.ipynb`
+- Complete `01_deep_learning_nlp.ipynb`
 - Understand tensor operations for text
 - Build first neural network for Australian text classification
 - Compare with TensorFlow approaches
 
 ### Phase 2: Embeddings and Representation (Week 2)  
-- Work through `word_embeddings_nllp.ipynb`
+- Work through `02_word_embeddings_nllp.ipynb`
 - Train custom embeddings on Australian corpus
 - Explore English-Vietnamese embedding alignment
 - Visualize semantic relationships
 
 ### Phase 3: Sequential Modeling (Week 3)
-- Master `sequence_models_nlp.ipynb`
+- Master `03_sequence_models_nlp.ipynb`
 - Implement LSTM/GRU from scratch
 - Apply to Australian sentiment analysis
 - Handle multilingual sequence tasks
 
 ### Phase 4: Advanced Techniques (Week 4)
-- Complete `advanced_nlp.ipynb`
+- Complete `04_advanced_nlp.ipynb`
 - Implement Bi-LSTM CRF architecture
 - Tackle complex NER tasks
 - Bridge to Hugging Face transformers
@@ -284,10 +284,10 @@ Each notebook includes clear comparisons to help TensorFlow users transition:
    ```
 
 4. **Open Notebooks**:
-   - Start with `deep_learning_nlp.ipynb` for foundations
-   - Progress through `word_embeddings_nllp.ipynb`
-   - Continue with `sequence_models_nlp.ipynb`
-   - Complete with `advanced_nlp.ipynb`
+   - Start with `01_deep_learning_nlp.ipynb` for foundations
+   - Progress through `02_word_embeddings_nllp.ipynb`
+   - Continue with `03_sequence_models_nlp.ipynb`
+   - Complete with `04_advanced_nlp.ipynb`
 
 ## 🎓 Expected Learning Outcomes
 
