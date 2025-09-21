@@ -56,9 +56,9 @@ $$f(x) = 0.9 \cdot 1.2x + 0.9 \cdot 50 = 1.08x + 45$$
 
 ```mermaid
 graph TD
-    A[x = sydney_revenue x = 150 ] -->|×1.2| B[s = seasonal_boost s(x) = 1.2x ]
-    B -->|+50| C[w = weekend_bonus w(s) = s + 50 ]
-    C -->|×0.9| D[t = after_tax t(w) = 0.9w ]
+    A[x = sydney_revenue<br>x = 150] -->|×1.2| B[s = seasonal_boost<br>s = 1.2x]
+    B -->|+50| C[w = weekend_bonus<br>w = s + 50]
+    C -->|×0.9| D[t = after_tax<br>t = 0.9w]
     
     style A fill:#FF6B35,stroke:#004E89,color:#FFFFFF,stroke-width:2px
     style B fill:#004E89,stroke:#FF6B35,color:#FFFFFF,stroke-width:2px
@@ -152,9 +152,9 @@ print(f"Gradient: {gradient}")  # Output: 1.08
 
 ```mermaid
 graph TD
-    D[after_tax<br/>$\frac{\partial t}{\partial t} = 1$] -->|×0.9| C[weekend_bonus<br/>$\frac{\partial t}{\partial w} = 0.9$]
-    C -->|×1| B[seasonal_boost<br/>$\frac{\partial t}{\partial s} = 0.9$]
-    B -->|×1.2| A[sydney_revenue<br/>$\frac{\partial t}{\partial x} = 1.08$]
+    D[after_tax<br>∂t/∂t = 1] -->|×0.9| C[weekend_bonus<br>∂t/∂w = 0.9]
+    C -->|×1| B[seasonal_boost<br>∂t/∂s = 0.9]
+    B -->|×1.2| A[sydney_revenue<br>∂t/∂x = 1.08]
     
     style D fill:#FFFFFF,stroke:#FF6B35,color:#333,stroke-width:2px
     style C fill:#FF6B35,stroke:#004E89,color:#FFFFFF,stroke-width:2px
