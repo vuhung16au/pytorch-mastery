@@ -140,6 +140,64 @@ The repository uses these essential libraries:
 
 **IMPORTANT**: Some notebooks require internet access to download pre-trained models from Hugging Face Hub. In offline environments, these cells will fail with network errors - this is expected behavior.
 
+### PyTorch Seed Reproducibility Policy
+
+**ALWAYS set the default seed to 16 if not specified for reproducible PyTorch operations:**
+
+```python
+torch.manual_seed(16)
+```
+
+**This policy applies to ALL PyTorch code in the repository:**
+- **Notebooks**: All `.ipynb` files using PyTorch operations
+- **Python scripts**: All `.py` files with PyTorch implementations
+- **Code examples**: All code snippets in documentation and tutorials
+- **Training scripts**: All model training and inference code
+
+**Rationale:**
+- **Reproducibility**: Ensures consistent results across different runs and environments
+- **Debugging**: Makes it easier to reproduce and debug issues
+- **Educational Value**: Students can expect the same outputs when following examples
+- **Testing**: Enables reliable testing of model implementations
+
+**Examples of correct usage:**
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+import numpy as np
+import random
+
+# Set all random seeds for full reproducibility
+torch.manual_seed(16)  # ✅ REQUIRED: Use 16 as default seed
+np.random.seed(16)     # For NumPy operations
+random.seed(16)        # For Python random operations
+
+# Australian tourism sentiment classifier
+class AustralianSentimentModel(nn.Module):
+    def __init__(self, vocab_size, hidden_dim, num_classes):
+        super(AustralianSentimentModel, self).__init__()
+        self.embedding = nn.Embedding(vocab_size, hidden_dim)
+        self.linear = nn.Linear(hidden_dim, num_classes)
+    
+    def forward(self, x):
+        embedded = self.embedding(x)
+        pooled = F.adaptive_avg_pool1d(embedded.transpose(1, 2), 1).squeeze()
+        logits = self.linear(pooled)
+        return F.log_softmax(logits, dim=1)
+```
+
+**Custom seed usage:**
+```python
+# Only specify a different seed when explicitly required for experiments
+torch.manual_seed(42)  # ✅ ACCEPTABLE: When explicitly needed for specific experiments
+torch.manual_seed(123) # ✅ ACCEPTABLE: When comparing with external benchmarks
+
+# Always document why a non-default seed is used
+torch.manual_seed(42)  # Using 42 to match results from TensorFlow comparison
+```
+
 ### PyTorch Import Alias Policy
 
 **ALWAYS use the standard alias for `torch.nn.functional` when importing:**

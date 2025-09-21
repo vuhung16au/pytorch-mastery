@@ -176,9 +176,9 @@ def create_deep_learning_nlp_notebook():
             "plt.rcParams['figure.figsize'] = (12, 8)\n",
             "\n",
             "# Set random seeds for reproducibility\n",
-            "torch.manual_seed(42)\n",
-            "np.random.seed(42)\n",
-            "random.seed(42)\n",
+            "torch.manual_seed(16)\n",
+            "np.random.seed(16)\n",
+            "random.seed(16)\n",
             "\n",
             "print(f\"✅ PyTorch {torch.__version__} ready!\")\n",
             "print(f\"📊 Libraries imported successfully!\")"
