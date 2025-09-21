@@ -49,6 +49,7 @@ The complete transformation can be expressed as a composite function:
 $$f(x) = t(w(s(x))) = 0.9(s(x) + 50) = 0.9(1.2x + 50)$$
 
 Expanding this:
+
 $$f(x) = 0.9 \cdot 1.2x + 0.9 \cdot 50 = 1.08x + 45$$
 
 ## PyTorch Computation Graph
