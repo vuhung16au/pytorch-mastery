@@ -67,6 +67,24 @@ graph TD
 
     subgraph "Forward Pass"
         FP1[x = 150 → s = 180]
+        FP2[s = 180 → w = 230]
+        FP3[w = 230 → t = 207]
+    end
+```
+
+```mermaid
+graph TD
+    A[x = sydney_revenue<br/>$x = 150$] -->|×1.2| B[s = seasonal_boost<br/>$s(x) = 1.2x$]
+    B -->|+50| C[w = weekend_bonus<br/>$w(s) = s + 50$]
+    C -->|×0.9| D[t = after_tax<br/>$t(w) = 0.9w$]
+    
+    style A fill:#FF6B35,stroke:#004E89,color:#FFFFFF,stroke-width:2px
+    style B fill:#004E89,stroke:#FF6B35,color:#FFFFFF,stroke-width:2px
+    style C fill:#FF6B35,stroke:#004E89,color:#FFFFFF,stroke-width:2px
+    style D fill:#004E89,stroke:#FF6B35,color:#FFFFFF,stroke-width:2px
+
+    subgraph "Forward Pass"
+        FP1[x = 150 → s = 180]
         FP2[s = 180 → w = 230] 
         FP3[w = 230 → t = 207]
     end
