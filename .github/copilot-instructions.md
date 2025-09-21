@@ -140,6 +140,79 @@ The repository uses these essential libraries:
 
 **IMPORTANT**: Some notebooks require internet access to download pre-trained models from Hugging Face Hub. In offline environments, these cells will fail with network errors - this is expected behavior.
 
+### PyTorch Import Alias Policy
+
+**ALWAYS use the standard alias for `torch.nn.functional` when importing:**
+
+```python
+import torch.nn.functional as F
+```
+
+**This policy applies to ALL PyTorch code in the repository:**
+- **Notebooks**: All `.ipynb` files using functional operations
+- **Python scripts**: All `.py` files with PyTorch implementations
+- **Code examples**: All code snippets in documentation and tutorials
+- **Training scripts**: All model training and inference code
+
+**Rationale:**
+- **Consistency**: Standardizes functional operation usage across the codebase
+- **Readability**: `F.relu()`, `F.softmax()`, `F.cross_entropy()` are more readable than full names
+- **PyTorch Convention**: Follows official PyTorch documentation and community standards
+- **Code Brevity**: Reduces verbosity while maintaining clarity
+
+**Examples of correct usage:**
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F  # ✅ REQUIRED ALIAS
+
+# Australian tourism sentiment classifier
+class AustralianSentimentModel(nn.Module):
+    def __init__(self, vocab_size, hidden_dim, num_classes):
+        super(AustralianSentimentModel, self).__init__()
+        self.embedding = nn.Embedding(vocab_size, hidden_dim)
+        self.linear = nn.Linear(hidden_dim, num_classes)
+    
+    def forward(self, x):
+        embedded = self.embedding(x)
+        pooled = F.adaptive_avg_pool1d(embedded.transpose(1, 2), 1).squeeze()  # ✅ Using F alias
+        logits = self.linear(pooled)
+        return F.log_softmax(logits, dim=1)  # ✅ Using F alias
+
+# Loss computation using functional API
+def compute_loss(model_output, targets):
+    return F.nll_loss(model_output, targets)  # ✅ Using F alias
+
+# Activation functions in forward pass
+def custom_activation(x):
+    return F.gelu(F.dropout(x, p=0.1, training=True))  # ✅ Using F alias
+```
+
+**Incorrect patterns to avoid:**
+```python
+# ❌ WRONG: Importing without alias
+import torch.nn.functional
+
+# ❌ WRONG: Using different alias
+import torch.nn.functional as functional
+
+# ❌ WRONG: Direct function imports
+from torch.nn.functional import relu, softmax, cross_entropy
+
+# ❌ WRONG: Using full module path
+x = torch.nn.functional.relu(x)
+
+# ✅ CORRECT: Use the standard F alias
+import torch.nn.functional as F
+x = F.relu(x)
+```
+
+**Special cases and considerations:**
+- **Specific function imports**: Only allowed when importing a single function for performance-critical code with clear documentation
+- **Namespace conflicts**: If `F` conflicts with other variables, use the full alias but document the reason
+- **Legacy code**: Update existing code to use the F alias during refactoring
+
 ### PyTorch/TensorBoard Logging Policy
 
 **ALL notebooks that use PyTorch for model training MUST implement TensorBoard logging for training visualization and monitoring.**
@@ -178,6 +251,7 @@ def get_run_logdir(experiment_name="pytorch_run"):
 ```python
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
@@ -471,6 +545,7 @@ DEVICE = device
 ```python
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 # Example: Australian City Classifier with device handling
 class AustralianCityClassifier(nn.Module):
@@ -1384,6 +1459,7 @@ print(f'✅ Device {device} working correctly!')
 python -c "
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 # Test simple model for Australian city classification
 class AustralianCityClassifier(nn.Module):
@@ -1631,6 +1707,7 @@ Use these patterns as standard examples throughout the repository, with Australi
 # Basic Neural Network Pattern with TensorFlow Comparison
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 
 # PyTorch Model Definition (compare with tf.keras.Sequential)
@@ -1691,6 +1768,7 @@ print(model)
 # Basic Transformer Usage with Australia/NLP Focus
 from transformers import AutoTokenizer, AutoModel
 import torch
+import torch.nn.functional as F
 
 # Load pre-trained model and tokenizer
 model_name = "bert-base-uncased"
@@ -1973,6 +2051,7 @@ print(f"Sentiment analyzer: {sum(p.numel() for p in sentiment_analyzer.parameter
 ```python
 from torch.utils.data import Dataset, DataLoader
 import torch
+import torch.nn.functional as F
 import pandas as pd
 
 class AustralianMultilingualDataset(Dataset):
