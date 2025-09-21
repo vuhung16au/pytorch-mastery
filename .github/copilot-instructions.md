@@ -96,7 +96,7 @@ Execute these commands in order to set up a fully functional development environ
 
 4. **Install additional ML and visualization libraries** - NEVER CANCEL: Takes 2-3 minutes. Set timeout to 300+ seconds:
    ```bash
-   pip install numpy pandas matplotlib seaborn scikit-learn jupyter notebook tensorboard
+   pip install numpy pandas seaborn matplotlib scikit-learn jupyter notebook tensorboard
    ```
 
 5. **Verify PyTorch installation** (should complete in under 10 seconds):
@@ -120,7 +120,7 @@ The repository uses these essential libraries:
 - **Tokenizers**: Fast tokenization library
 - **TensorBoard**: Training visualization and monitoring
 - **NumPy & Pandas**: Data manipulation and analysis
-- **Matplotlib & Seaborn**: Data visualization
+- **Seaborn & Matplotlib**: Data visualization (prefer Seaborn for notebooks)
 - **scikit-learn**: Traditional machine learning algorithms
 - **Jupyter**: Interactive notebook environment
 
@@ -342,8 +342,8 @@ required_packages = [
     "datasets", 
     "tokenizers",
     "pandas",
-    "matplotlib",
     "seaborn",
+    "matplotlib",
     "tensorboard"
 ]
 
@@ -1169,6 +1169,55 @@ print(f"   Device location: {inputs['input_ids'].device}")
 - **MANDATORY TensorBoard logging** - All PyTorch training must include TensorBoard integration
 - **Log directory standards** - Use platform-specific log directories as defined in the PyTorch logging policy
 
+#### Notebook Header Requirements
+
+**ALL `.ipynb` notebooks MUST include a header menu at the top with links to:**
+
+1. **Open with Colab** - Opens the current notebook in Google Colab
+2. **View on Github** - Links to the notebook on GitHub
+
+**Required format for notebook headers:**
+
+```markdown
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vuhung16au/pytorch-mastery/blob/main/path/to/notebook.ipynb)
+[![View on GitHub](https://img.shields.io/badge/View_on-GitHub-blue?logo=github)](https://github.com/vuhung16au/pytorch-mastery/blob/main/path/to/notebook.ipynb)
+```
+
+**Implementation notes:**
+- Replace `path/to/notebook.ipynb` with the actual path from repository root
+- Place this header immediately after the main title in the first markdown cell
+- Ensure links work for both main branch and development branches
+- Test links before committing notebooks
+
+#### Visualization Library Standards
+
+**Use `seaborn` instead of `matplotlib` when possible in `.ipynb` notebooks:**
+
+```python
+# Preferred: Use seaborn for statistical plots and enhanced aesthetics
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Seaborn provides better defaults and statistical plotting
+sns.set_style("whitegrid")  # Better default styling
+fig, ax = plt.subplots(figsize=(10, 6))
+sns.lineplot(data=training_metrics, x='epoch', y='loss', hue='dataset', ax=ax)
+ax.set_title('Training Progress: Australian Tourism Sentiment Analysis')
+
+# Only use matplotlib directly for basic plots or when seaborn doesn't support the visualization
+import matplotlib.pyplot as plt
+plt.figure(figsize=(8, 6))
+plt.plot(epochs, losses)
+plt.title('Basic Loss Curve')
+```
+
+**Seaborn advantages for educational notebooks:**
+- Better default aesthetics and color palettes
+- Built-in statistical plotting functions
+- Better handling of categorical data
+- More intuitive API for complex visualizations
+- Enhanced legend and labeling capabilities
+
 ### For Model Development:
 1. **Create new model**:
    ```bash
@@ -1293,7 +1342,7 @@ print(f"   Device location: {inputs['input_ids'].device}")
 # Complete setup (run in order, NEVER CANCEL any step)
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu  # 3-5 minutes
 pip install transformers datasets tokenizers                                                # 2-3 minutes  
-pip install numpy pandas matplotlib seaborn scikit-learn jupyter tensorboard              # 2-3 minutes
+pip install numpy pandas seaborn matplotlib scikit-learn jupyter tensorboard              # 2-3 minutes
 
 # Quick validation (run all to verify environment)
 python -c "import torch, torchvision, transformers, datasets; print('Core imports OK')"
@@ -1480,6 +1529,99 @@ y = linear(x)           # output shape: (32, 5)
 ## PyTorch Learning Examples
 
 **ALWAYS prioritize PyTorch examples when creating documentation, tutorials, or example code. Include TensorFlow comparisons to help with the learning transition.**
+
+### Notebook Template and Structure
+
+**ALL `.ipynb` notebooks MUST follow this standardized template structure:**
+
+#### 1. Notebook Header Template
+
+Every notebook must start with the following header in the first markdown cell:
+
+```markdown
+# [Notebook Title]: [Brief Description]
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/vuhung16au/pytorch-mastery/blob/main/examples/your-notebook.ipynb)
+[![View on GitHub](https://img.shields.io/badge/View_on-GitHub-blue?logo=github)](https://github.com/vuhung16au/pytorch-mastery/blob/main/examples/your-notebook.ipynb)
+
+Brief description of what this notebook covers...
+
+## Learning Objectives
+- Objective 1
+- Objective 2
+- Objective 3
+
+---
+```
+
+**Implementation guidelines:**
+- Replace `examples/your-notebook.ipynb` with the actual relative path from repository root
+- Update both Colab and GitHub links to match the notebook's location
+- Ensure the notebook title is descriptive and follows naming conventions
+- Include 3-5 clear learning objectives
+- Test both links work before committing
+
+#### 2. Visualization Standards for Notebooks
+
+**Use seaborn as the primary visualization library in notebooks:**
+
+```python
+# Standard visualization imports for notebooks
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+# Set seaborn style for better notebook aesthetics
+sns.set_style("whitegrid")
+sns.set_palette("husl")
+
+# Example: Training metrics visualization with Australian context
+def plot_training_metrics(train_losses, val_losses, train_accuracies, val_accuracies):
+    """Plot training metrics with seaborn styling for Australian tourism model."""
+    
+    # Create DataFrame for seaborn
+    epochs = range(1, len(train_losses) + 1)
+    metrics_df = pd.DataFrame({
+        'Epoch': list(epochs) * 4,
+        'Value': train_losses + val_losses + train_accuracies + val_accuracies,
+        'Metric': ['Train Loss'] * len(epochs) + ['Val Loss'] * len(epochs) + 
+                 ['Train Acc'] * len(epochs) + ['Val Acc'] * len(epochs),
+        'Type': ['Loss'] * (len(epochs) * 2) + ['Accuracy'] * (len(epochs) * 2)
+    })
+    
+    # Create subplots with seaborn
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+    
+    # Loss plot
+    sns.lineplot(data=metrics_df[metrics_df['Type'] == 'Loss'], 
+                x='Epoch', y='Value', hue='Metric', ax=ax1)
+    ax1.set_title('Australian Tourism Sentiment Analysis - Loss')
+    ax1.set_ylabel('Loss')
+    
+    # Accuracy plot  
+    sns.lineplot(data=metrics_df[metrics_df['Type'] == 'Accuracy'], 
+                x='Epoch', y='Value', hue='Metric', ax=ax2)
+    ax2.set_title('Australian Tourism Sentiment Analysis - Accuracy')
+    ax2.set_ylabel('Accuracy')
+    
+    plt.tight_layout()
+    plt.show()
+
+# Example usage with Australian tourism data
+train_losses = [0.8, 0.6, 0.4, 0.3, 0.2]
+val_losses = [0.9, 0.7, 0.5, 0.4, 0.3]
+train_accuracies = [0.6, 0.7, 0.8, 0.85, 0.9]
+val_accuracies = [0.55, 0.65, 0.75, 0.8, 0.85]
+
+plot_training_metrics(train_losses, val_losses, train_accuracies, val_accuracies)
+```
+
+**When to use matplotlib directly:**
+- Simple line plots or scatter plots without statistical elements
+- Custom plot types not supported by seaborn
+- When fine-grained control over plot elements is needed
+- Performance-critical visualizations
 
 ### Common PyTorch Learning Patterns
 
