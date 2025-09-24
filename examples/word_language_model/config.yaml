@@ -1,0 +1,77 @@
+# Model Configuration for Word-level Language Modeling
+
+# RNN Language Model Configuration
+rnn_model:
+  architecture: "lstm"  # Options: lstm, gru, rnn
+  vocab_size: 10000     # Vocabulary size
+  embed_dim: 512        # Embedding dimension
+  hidden_dim: 512       # Hidden state dimension
+  num_layers: 2         # Number of RNN layers
+  dropout: 0.2          # Dropout rate
+  bidirectional: false  # Bidirectional RNN
+  tie_weights: true     # Tie input and output embeddings
+
+# Transformer Language Model Configuration
+transformer_model:
+  vocab_size: 10000     # Vocabulary size
+  embed_dim: 512        # Model dimension
+  num_heads: 8          # Number of attention heads
+  num_layers: 6         # Number of transformer layers
+  ff_dim: 2048          # Feed-forward dimension
+  max_seq_len: 128      # Maximum sequence length
+  dropout: 0.1          # Dropout rate
+  layer_norm_eps: 1e-5  # Layer normalization epsilon
+
+# Training Configuration
+training:
+  batch_size: 32        # Batch size
+  learning_rate: 0.001  # Learning rate
+  weight_decay: 1e-4    # Weight decay for regularization
+  epochs: 50            # Number of training epochs
+  warmup_steps: 4000    # Learning rate warmup steps
+  clip_grad_norm: 1.0   # Gradient clipping norm
+  eval_interval: 500    # Evaluation interval (steps)
+  save_interval: 1000   # Model saving interval (steps)
+
+# Data Configuration
+data:
+  train_split: 0.8      # Training split ratio
+  val_split: 0.1        # Validation split ratio
+  test_split: 0.1       # Test split ratio
+  seq_length: 64        # Sequence length for training
+  min_word_freq: 2      # Minimum word frequency for vocabulary
+  max_vocab_size: 10000 # Maximum vocabulary size
+  
+# Australian Context Configuration
+australian:
+  cities: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Darwin", "Hobart", "Canberra"]
+  landmarks: ["Opera House", "Harbour Bridge", "Uluru", "Great Barrier Reef", "Twelve Apostles"]
+  regions: ["New South Wales", "Victoria", "Queensland", "Western Australia", "South Australia", "Tasmania", "Northern Territory"]
+
+# Multilingual Configuration
+multilingual:
+  languages: ["en", "vi"]  # English and Vietnamese
+  shared_vocab: false      # Whether to use shared vocabulary
+  translate_pairs: true    # Use translation pairs for training
+  
+# Device Configuration
+device:
+  cuda_if_available: true  # Use CUDA if available
+  mps_if_available: true   # Use MPS (Apple Silicon) if available
+  cpu_fallback: true       # Fallback to CPU
+  mixed_precision: false   # Use mixed precision training
+  
+# Logging Configuration
+logging:
+  log_dir: "runs/"         # TensorBoard log directory
+  log_interval: 100        # Logging interval (steps)
+  sample_interval: 1000    # Text generation sampling interval
+  num_samples: 5           # Number of text samples to generate
+  
+# Generation Configuration
+generation:
+  max_length: 100          # Maximum generation length
+  temperature: 1.0         # Sampling temperature
+  top_k: 50                # Top-k sampling
+  top_p: 0.95             # Top-p (nucleus) sampling
+  num_return_sequences: 3  # Number of sequences to return
