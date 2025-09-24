@@ -9,13 +9,18 @@ from .rnn_language_model import (
     RNNLanguageModel,
     LSTMLanguageModel, 
     GRULanguageModel,
-    BiLSTMLanguageModel
+    BiLSTMLanguageModel,
+    AttentionLSTMLanguageModel,
+    create_rnn_language_model
 )
 
 from .transformer_language_model import (
     TransformerLanguageModel,
     PositionalEncoding,
-    MultiHeadAttention
+    MultiHeadAttention,
+    TransformerBlock,
+    GPTStyleLanguageModel,
+    create_transformer_language_model
 )
 
 from .utils import (
@@ -37,11 +42,16 @@ __all__ = [
     'LSTMLanguageModel', 
     'GRULanguageModel',
     'BiLSTMLanguageModel',
+    'AttentionLSTMLanguageModel',
+    'create_rnn_language_model',
     
     # Transformer Models
     'TransformerLanguageModel',
     'PositionalEncoding',
     'MultiHeadAttention',
+    'TransformerBlock',
+    'GPTStyleLanguageModel',
+    'create_transformer_language_model',
     
     # Utilities
     'detect_device',

@@ -38,7 +38,7 @@ data:
   train_split: 0.8      # Training split ratio
   val_split: 0.1        # Validation split ratio
   test_split: 0.1       # Test split ratio
-  seq_length: 64        # Sequence length for training
+  seq_length: 16        # Sequence length for training (optimized for tourism corpus)
   min_word_freq: 2      # Minimum word frequency for vocabulary
   max_vocab_size: 10000 # Maximum vocabulary size
   
