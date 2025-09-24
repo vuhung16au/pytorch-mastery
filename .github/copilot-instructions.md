@@ -74,6 +74,238 @@ multilingual_texts = {
 3. **Hugging Face Integration**: Show how PyTorch concepts lead naturally to Hugging Face usage
 4. **Practical Applications**: Emphasize real-world NLP tasks and applications
 
+### Code Implementation Policies
+
+#### Object-Oriented Programming (OOP) Preference Policy
+
+**ALWAYS prioritize Object-Oriented Programming (OOP) implementations over procedural/functional approaches:**
+
+- **Class-Based Models**: All PyTorch models must inherit from `nn.Module` and follow OOP design patterns
+- **Encapsulation**: Group related functionality into classes with clear responsibilities
+- **Inheritance**: Use inheritance for model variants and extensions (e.g., base classes for Australian NLP models)
+- **Composition**: Prefer composition over complex inheritance chains for model components
+- **Polymorphism**: Design interfaces that allow different implementations (e.g., different tokenizers, data processors)
+
+**Required OOP patterns for this repository:**
+
+```python
+# ✅ PREFERRED: OOP-based implementation
+class AustralianTourismAnalyzer:
+    """
+    Object-oriented analyzer for Australian tourism sentiment with helper methods.
+    
+    Encapsulates data processing, model inference, and result formatting.
+    Supports both English and Vietnamese text analysis.
+    """
+    
+    def __init__(self, model_name: str = "bert-base-multilingual-cased", device: Optional[torch.device] = None):
+        self.model_name = model_name
+        self.device = device or self._detect_device()
+        self.tokenizer = None
+        self.model = None
+        self._load_components()
+        
+        # Australian context data
+        self.australian_cities = ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Darwin", "Hobart", "Canberra"]
+        self.sentiment_labels = ["positive", "negative", "neutral"]
+    
+    def _detect_device(self) -> torch.device:
+        """Helper method for device detection."""
+        return detect_device()[0]  # Use global helper function
+    
+    def _load_components(self) -> None:
+        """Helper method to load model components."""
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        self.model = AutoModel.from_pretrained(self.model_name).to(self.device)
+    
+    def analyze_sentiment(self, text: str, language: str = "en") -> Dict[str, Any]:
+        """Analyze sentiment with OOP approach."""
+        processed_input = self._preprocess_text(text, language)
+        raw_output = self._run_inference(processed_input)
+        return self._format_results(raw_output, text, language)
+    
+    def _preprocess_text(self, text: str, language: str) -> Dict[str, torch.Tensor]:
+        """Helper method for text preprocessing."""
+        # Implementation details...
+        pass
+        
+    def _run_inference(self, inputs: Dict[str, torch.Tensor]) -> torch.Tensor:
+        """Helper method for model inference."""
+        # Implementation details...
+        pass
+        
+    def _format_results(self, raw_output: torch.Tensor, original_text: str, language: str) -> Dict[str, Any]:
+        """Helper method for result formatting."""
+        # Implementation details...
+        pass
+
+# ❌ AVOID: Procedural approach
+def analyze_australian_sentiment(text, model_name="bert-base-multilingual-cased"):
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModel.from_pretrained(model_name)
+    inputs = tokenizer(text, return_tensors="pt")
+    outputs = model(**inputs)
+    # ... rest of procedural code
+```
+
+**OOP Benefits for Educational Repository:**
+- **Modularity**: Clear separation of concerns makes code easier to understand and teach
+- **Reusability**: Classes can be easily extended and modified for different use cases
+- **Maintainability**: Encapsulated functionality is easier to debug and update
+- **Scalability**: OOP patterns support growing complexity in learning examples
+
+#### Helper Functions Preference Policy
+
+**ALWAYS use helper functions to modularize code and improve readability:**
+
+- **Single Responsibility**: Each helper function should have one clear purpose
+- **Reusability**: Helper functions should be designed for use across multiple contexts
+- **Type Hints**: All helper functions must include complete type annotations
+- **Documentation**: Every helper function must have clear docstrings with examples
+- **Pure Functions**: Prefer pure functions that don't modify global state when possible
+
+**Required helper function patterns:**
+
+```python
+from typing import Dict, List, Tuple, Optional, Union
+import torch
+import torch.nn.functional as F
+
+# ✅ PREFERRED: Helper functions with clear responsibilities
+
+def detect_device() -> Tuple[torch.device, str]:
+    """
+    Helper function to detect the best available PyTorch device.
+    
+    Returns:
+        Tuple of (device, description) for device management.
+        
+    Example:
+        >>> device, device_info = detect_device()
+        >>> print(f"Using {device_info}")
+    """
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+        device_info = f"CUDA GPU: {torch.cuda.get_device_name(0)}"
+    elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+        device = torch.device("mps") 
+        device_info = "Apple Silicon MPS"
+    else:
+        device = torch.device("cpu")
+        device_info = "CPU (No GPU acceleration)"
+    
+    return device, device_info
+
+def prepare_australian_texts(texts: List[str], tokenizer, max_length: int = 512) -> Dict[str, torch.Tensor]:
+    """
+    Helper function to prepare Australian tourism texts for model input.
+    
+    Args:
+        texts: List of texts (English/Vietnamese)
+        tokenizer: Hugging Face tokenizer instance
+        max_length: Maximum sequence length
+        
+    Returns:
+        Dictionary with tokenized inputs ready for model processing.
+        
+    Example:
+        >>> texts = ["Sydney Opera House is beautiful", "Nhà hát Opera Sydney rất đẹp"]
+        >>> inputs = prepare_australian_texts(texts, tokenizer)
+        >>> print(inputs['input_ids'].shape)
+    """
+    return tokenizer(
+        texts,
+        padding=True,
+        truncation=True,
+        max_length=max_length,
+        return_tensors="pt"
+    )
+
+def calculate_multilingual_similarity(en_embeddings: torch.Tensor, vi_embeddings: torch.Tensor) -> float:
+    """
+    Helper function to calculate cosine similarity between English and Vietnamese embeddings.
+    
+    Args:
+        en_embeddings: English text embeddings
+        vi_embeddings: Vietnamese text embeddings
+        
+    Returns:
+        Cosine similarity score between the embeddings.
+        
+    Example:
+        >>> similarity = calculate_multilingual_similarity(en_emb, vi_emb)
+        >>> print(f"Similarity: {similarity:.4f}")
+    """
+    return F.cosine_similarity(en_embeddings, vi_embeddings, dim=-1).mean().item()
+
+def format_training_metrics(epoch: int, train_loss: float, val_loss: float, train_acc: float, val_acc: float) -> str:
+    """
+    Helper function to format training metrics for consistent logging.
+    
+    Args:
+        epoch: Current epoch number
+        train_loss: Training loss value
+        val_loss: Validation loss value  
+        train_acc: Training accuracy
+        val_acc: Validation accuracy
+        
+    Returns:
+        Formatted string for logging.
+        
+    Example:
+        >>> log_msg = format_training_metrics(5, 0.23, 0.31, 0.89, 0.85)
+        >>> print(log_msg)
+    """
+    return (f"Epoch {epoch:3d} | "
+            f"Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | "
+            f"Train Acc: {train_acc:.4f} | Val Acc: {val_acc:.4f}")
+
+# ❌ AVOID: Monolithic functions without clear separation
+def do_everything_for_australian_nlp(texts, model_name, device_type, max_length, ...):
+    # Massive function that handles device detection, text processing, 
+    # model loading, inference, and result formatting all in one place
+    pass
+```
+
+**Helper Function Organization Patterns:**
+
+```python
+# Group related helper functions by domain
+class AustralianNLPHelpers:
+    """Collection of helper functions for Australian NLP tasks."""
+    
+    @staticmethod
+    def extract_city_mentions(text: str) -> List[str]:
+        """Extract Australian city mentions from text."""
+        pass
+    
+    @staticmethod  
+    def translate_en_to_vi(text: str) -> str:
+        """Translate English text to Vietnamese."""
+        pass
+        
+    @staticmethod
+    def validate_multilingual_input(en_text: str, vi_text: str) -> bool:
+        """Validate that English and Vietnamese texts are properly paired."""
+        pass
+
+# Or use module-level functions for broader utility
+def create_run_logdir(experiment_name: str = "pytorch_run") -> str:
+    """Create timestamped directory for TensorBoard logs."""
+    pass
+
+def safe_to_device(tensor: torch.Tensor, device: torch.device, tensor_name: str = "tensor") -> torch.Tensor:
+    """Safely move tensor to device with error handling."""
+    pass
+```
+
+**Benefits of Helper Functions:**
+- **Readability**: Complex operations broken into understandable chunks
+- **Testing**: Individual functions can be easily unit tested
+- **Reusability**: Functions can be imported and used across notebooks and scripts
+- **Debugging**: Easier to isolate and fix issues in smaller functions
+- **Documentation**: Each function serves as self-documenting code with clear purpose
+
 ## Working Effectively
 
 ### Bootstrap the Environment
@@ -1392,7 +1624,18 @@ plt.title('Basic Loss Curve')
 - **Standardized callback configuration** - Use consistent TensorBoard logging settings across notebooks
 
 ### PyTorch Best Practices:
-- **Device Management**: Always use the `detect_device()` function and move models/data to the detected device
+
+#### Code Organization (OOP + Helper Functions - NEW POLICIES):
+- **MANDATORY OOP Implementation**: All PyTorch models must use class-based OOP design patterns
+- **Helper Functions**: Break complex operations into focused, reusable helper functions
+- **Configuration Classes**: Use dataclasses or config objects for parameter management
+- **Abstract Base Classes**: Use inheritance for model variants and shared functionality
+- **Factory Patterns**: Implement helper functions for creating common model/dataset configurations
+- **Type Hints**: All classes and helper functions must include complete type annotations
+- **Single Responsibility**: Each class and helper function should have one clear purpose
+
+#### Device and Performance Management:
+- **Device Management**: Always use the `detect_device()` helper function and move models/data to the detected device
 - Use `torch.device` for device-agnostic code and explicit device management
 - Implement proper data loaders with appropriate batch sizes for your target device
 - Use model checkpointing for long training runs with device state preservation
@@ -1403,6 +1646,36 @@ plt.title('Basic Loss Curve')
 - **MPS Considerations**: Implement CPU fallbacks for unsupported MPS operations
 - **CPU Optimization**: Use appropriate thread counts and smaller batch sizes for CPU-only training
 - **Memory Management**: Monitor device memory usage and implement garbage collection strategies
+
+#### OOP Design Patterns for PyTorch:
+```python
+# ✅ PREFERRED: OOP with helper functions
+class AustralianNLPPipeline:
+    """Main pipeline class with clear responsibilities."""
+    
+    def __init__(self, config: PipelineConfig):
+        self.config = config
+        self.device = self._detect_device()  # helper method
+        self.model = self._load_model()      # helper method
+        self.tokenizer = self._load_tokenizer()  # helper method
+    
+    def _detect_device(self) -> torch.device:
+        """Helper method for device detection."""
+        return detect_optimal_device()[0]  # uses global helper function
+    
+    def process_australian_text(self, text: str) -> Dict[str, Any]:
+        """Main processing method using helper functions."""
+        validated_text = validate_australian_context(text)  # helper function
+        preprocessed = self._preprocess_text(text)           # helper method
+        results = self._run_inference(preprocessed)          # helper method
+        return format_nlp_results(results)                   # helper function
+
+# ❌ AVOID: Procedural approach
+def process_australian_text_procedural(text, model_name, device_type):
+    # Large function doing everything in one place
+    # Difficult to test, reuse, and maintain
+    pass
+```
 
 ## Limitations and Known Issues
 
@@ -1936,29 +2209,103 @@ Key Learning Points (TensorFlow → PyTorch):
 
 ### Code Templates
 
-**Standard model definition template with TensorFlow comparisons:**
+**UPDATED: Standard OOP-based model template with helper functions (following new policies):**
+
 ```python
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from typing import Dict, List, Tuple, Optional, Any
+from dataclasses import dataclass
+
+# Helper function for device detection (following helper functions policy)
+def detect_optimal_device() -> Tuple[torch.device, str]:
+    """
+    Helper function to detect the best available PyTorch device.
+    
+    Returns:
+        Tuple of (device, description) for optimal performance.
+    """
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+        device_info = f"CUDA GPU: {torch.cuda.get_device_name(0)}"
+    elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+        device = torch.device("mps") 
+        device_info = "Apple Silicon MPS"
+    else:
+        device = torch.device("cpu")
+        device_info = "CPU (No GPU acceleration)"
+    return device, device_info
+
+# Helper function for weight initialization
+def initialize_model_weights(model: nn.Module) -> None:
+    """
+    Helper function to initialize model weights using Xavier uniform initialization.
+    
+    Args:
+        model: PyTorch model to initialize
+    """
+    for name, param in model.named_parameters():
+        if 'weight' in name and len(param.shape) > 1:
+            nn.init.xavier_uniform_(param)
+        elif 'bias' in name:
+            nn.init.zeros_(param)
+
+# Helper function for Australian context validation
+def validate_australian_context(text: str) -> Dict[str, bool]:
+    """
+    Helper function to validate Australian context in text.
+    
+    Args:
+        text: Input text to validate
+        
+    Returns:
+        Dictionary with validation results
+    """
+    australian_cities = ["sydney", "melbourne", "brisbane", "perth", "adelaide", "darwin", "hobart", "canberra"]
+    australian_landmarks = ["opera house", "harbour bridge", "uluru", "great barrier reef"]
+    
+    text_lower = text.lower()
+    return {
+        'has_australian_city': any(city in text_lower for city in australian_cities),
+        'has_landmark': any(landmark in text_lower for landmark in australian_landmarks),
+        'is_australian_context': any(term in text_lower for term in australian_cities + australian_landmarks)
+    }
+
+@dataclass
+class AustralianNLPConfig:
+    """Configuration class for Australian NLP models (OOP design pattern)."""
+    vocab_size: int = 50000
+    embed_dim: int = 300
+    hidden_dim: int = 256
+    output_dim: int = 8  # 8 Australian cities
+    dropout_rate: float = 0.1
+    max_sequence_length: int = 512
+    device: Optional[torch.device] = None
+    australian_cities: List[str] = None
+    
+    def __post_init__(self):
+        if self.device is None:
+            self.device = detect_optimal_device()[0]
+        if self.australian_cities is None:
+            self.australian_cities = ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Darwin", "Hobart", "Canberra"]
 
 class AustralianNLPModel(nn.Module):
     """
-    A custom PyTorch model for Australian NLP tasks with multilingual support.
+    UPDATED: Object-oriented Australian NLP model with helper functions.
+    
+    This model demonstrates preferred OOP patterns and helper function usage:
+    - Configuration class for clean parameter management
+    - Helper functions for common operations  
+    - Encapsulated functionality with clear responsibilities
+    - Multilingual support for English-Vietnamese tasks
     
     Use cases:
     - Sentiment analysis of Australian restaurant reviews
     - Classification of Australian city tourism descriptions
     - English-Vietnamese translation for Australian content
     
-    Args:
-        vocab_size (int): Size of vocabulary (English + Vietnamese tokens)
-        embed_dim (int): Dimension of embedding layer
-        hidden_dim (int): Dimension of hidden layers  
-        output_dim (int): Number of output classes (e.g., 8 Australian cities)
-        dropout_rate (float): Dropout rate for regularization
-    
-    TensorFlow equivalent:
+    TensorFlow equivalent (procedural approach we avoid):
         model = tf.keras.Sequential([
             tf.keras.layers.Embedding(vocab_size, embed_dim),
             tf.keras.layers.LSTM(hidden_dim, return_sequences=False),
@@ -1968,95 +2315,368 @@ class AustralianNLPModel(nn.Module):
         ])
     
     Example:
-        >>> australian_cities = ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Darwin", "Hobart", "Canberra"]
-        >>> model = AustralianNLPModel(vocab_size=50000, embed_dim=300, hidden_dim=256, output_dim=len(australian_cities))
-        >>> # Sample input: tokenized text about Australian cities
+        >>> config = AustralianNLPConfig(vocab_size=50000, embed_dim=300, hidden_dim=256, output_dim=8)
+        >>> model = AustralianNLPModel(config)
         >>> x = torch.randint(0, 50000, (32, 100))  # batch_size=32, seq_len=100
         >>> output = model(x)
-        >>> print(output.shape)  # torch.Size([32, 8]) - probabilities for 8 cities
+        >>> print(output.shape)  # torch.Size([32, 8]) - probabilities for 8 Australian cities
     """
-    def __init__(self, vocab_size, embed_dim, hidden_dim, output_dim, dropout_rate=0.1):
+    
+    def __init__(self, config: AustralianNLPConfig):
         super(AustralianNLPModel, self).__init__()
         
-        # Embedding layer (like tf.keras.layers.Embedding)
-        self.embedding = nn.Embedding(vocab_size, embed_dim)
+        # Store configuration (OOP encapsulation)
+        self.config = config
+        self.device = config.device
         
-        # LSTM for sequence processing (like tf.keras.layers.LSTM)
-        self.lstm = nn.LSTM(embed_dim, hidden_dim, batch_first=True)
+        # Build model components using helper methods
+        self._build_embedding_layer()
+        self._build_sequence_layer() 
+        self._build_classification_head()
         
-        # Dropout for regularization
-        self.dropout = nn.Dropout(dropout_rate)
+        # Initialize weights using helper function
+        initialize_model_weights(self)
         
-        # Dense layers (like tf.keras.layers.Dense)
-        self.fc1 = nn.Linear(hidden_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, output_dim)
+        # Move to device
+        self.to(self.device)
+    
+    def _build_embedding_layer(self) -> None:
+        """Helper method to build embedding layer."""
+        self.embedding = nn.Embedding(self.config.vocab_size, self.config.embed_dim)
         
-        # Activation functions
+    def _build_sequence_layer(self) -> None:
+        """Helper method to build LSTM sequence processing layer."""
+        self.lstm = nn.LSTM(
+            self.config.embed_dim, 
+            self.config.hidden_dim, 
+            batch_first=True,
+            dropout=self.config.dropout_rate if self.config.hidden_dim > 1 else 0
+        )
+        
+    def _build_classification_head(self) -> None:
+        """Helper method to build classification head."""
+        self.dropout = nn.Dropout(self.config.dropout_rate)
+        self.fc1 = nn.Linear(self.config.hidden_dim, self.config.hidden_dim)
+        self.fc2 = nn.Linear(self.config.hidden_dim, self.config.output_dim)
         self.relu = nn.ReLU()
+    
+    def _extract_sequence_features(self, embedded: torch.Tensor) -> torch.Tensor:
+        """
+        Helper method to extract features from embedded sequences.
         
-        # Initialize weights (TensorFlow does this automatically)
-        self._init_weights()
+        Args:
+            embedded: Embedded input sequences
+            
+        Returns:
+            Extracted sequence features
+        """
+        lstm_out, (hidden, cell) = self.lstm(embedded)
+        # Use last hidden state for classification
+        return hidden[-1]  # (batch_size, hidden_dim)
     
-    def _init_weights(self):
-        """Initialize weights - manual in PyTorch, automatic in TensorFlow"""
-        for name, param in self.named_parameters():
-            if 'weight' in name and len(param.shape) > 1:
-                nn.init.xavier_uniform_(param)
+    def _apply_classification_head(self, features: torch.Tensor) -> torch.Tensor:
+        """
+        Helper method to apply classification head to features.
+        
+        Args:
+            features: Extracted sequence features
+            
+        Returns:
+            Classification logits
+        """
+        x = self.dropout(features)
+        x = self.relu(self.fc1(x))
+        x = self.dropout(x)
+        return self.fc2(x)  # No softmax here if using CrossEntropyLoss
     
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass using helper methods for clean organization.
+        
+        Args:
+            x: Input token IDs of shape (batch_size, seq_len)
+            
+        Returns:
+            Classification logits of shape (batch_size, output_dim)
+        """
         # Embedding lookup
         embedded = self.embedding(x)  # (batch_size, seq_len, embed_dim)
         
-        # LSTM processing
-        lstm_out, (hidden, cell) = self.lstm(embedded)
+        # Feature extraction using helper method
+        sequence_features = self._extract_sequence_features(embedded)
         
-        # Use last hidden state for classification
-        last_hidden = hidden[-1]  # (batch_size, hidden_dim)
+        # Classification using helper method
+        logits = self._apply_classification_head(sequence_features)
         
-        # Apply dropout and dense layers
-        x = self.dropout(last_hidden)
-        x = self.relu(self.fc1(x))
-        x = self.dropout(x)
-        x = self.fc2(x)  # No softmax here if using CrossEntropyLoss
+        return logits
+    
+    def predict_australian_city(self, text_tokens: torch.Tensor) -> Dict[str, Any]:
+        """
+        High-level method for Australian city prediction with helper functions.
         
-        return x
+        Args:
+            text_tokens: Tokenized input text
+            
+        Returns:
+            Prediction results with probabilities and city names
+        """
+        self.eval()
+        with torch.no_grad():
+            # Move to device if needed
+            if text_tokens.device != self.device:
+                text_tokens = text_tokens.to(self.device)
+            
+            # Get logits
+            logits = self.forward(text_tokens)
+            
+            # Convert to probabilities using helper function
+            probabilities = self._logits_to_probabilities(logits)
+            
+            # Format results using helper function
+            return self._format_city_predictions(probabilities)
+    
+    def _logits_to_probabilities(self, logits: torch.Tensor) -> torch.Tensor:
+        """Helper method to convert logits to probabilities."""
+        return F.softmax(logits, dim=-1)
+    
+    def _format_city_predictions(self, probabilities: torch.Tensor) -> Dict[str, Any]:
+        """
+        Helper method to format city prediction results.
+        
+        Args:
+            probabilities: Softmax probabilities
+            
+        Returns:
+            Formatted prediction results
+        """
+        predicted_idx = probabilities.argmax(dim=-1)
+        confidence = probabilities.max(dim=-1).values
+        
+        results = []
+        for i in range(len(predicted_idx)):
+            results.append({
+                'predicted_city': self.config.australian_cities[predicted_idx[i]],
+                'confidence': confidence[i].item(),
+                'all_probabilities': {
+                    city: prob.item() 
+                    for city, prob in zip(self.config.australian_cities, probabilities[i])
+                }
+            })
+        
+        return {'predictions': results, 'model_config': self.config}
 
-# Example usage with Australian context
-australian_cities = ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Darwin", "Hobart", "Canberra"]
-sentiment_labels = ["positive", "negative", "neutral"]
+# Helper function for model creation with OOP pattern
+def create_australian_city_classifier(vocab_size: int = 50000, device: Optional[torch.device] = None) -> AustralianNLPModel:
+    """
+    Helper function to create Australian city classifier with sensible defaults.
+    
+    Args:
+        vocab_size: Vocabulary size for embeddings
+        device: Target device for model
+        
+    Returns:
+        Configured AustralianNLPModel instance
+    """
+    config = AustralianNLPConfig(
+        vocab_size=vocab_size,
+        embed_dim=300,
+        hidden_dim=256, 
+        output_dim=8,  # 8 Australian cities
+        dropout_rate=0.1,
+        device=device
+    )
+    
+    return AustralianNLPModel(config)
 
-# Model for Australian city classification
-city_classifier = AustralianNLPModel(
-    vocab_size=50000,  # Combined English + Vietnamese vocabulary
-    embed_dim=300,
-    hidden_dim=256,
-    output_dim=len(australian_cities),
-    dropout_rate=0.1
-)
+# Helper function for model creation with sentiment analysis
+def create_australian_sentiment_analyzer(vocab_size: int = 50000, device: Optional[torch.device] = None) -> AustralianNLPModel:
+    """
+    Helper function to create Australian sentiment analyzer.
+    
+    Args:
+        vocab_size: Vocabulary size for embeddings
+        device: Target device for model
+        
+    Returns:
+        Configured AustralianNLPModel instance for sentiment analysis
+    """
+    config = AustralianNLPConfig(
+        vocab_size=vocab_size,
+        embed_dim=300,
+        hidden_dim=256,
+        output_dim=3,  # positive, negative, neutral
+        dropout_rate=0.1,
+        device=device
+    )
+    
+    return AustralianNLPModel(config)
 
-# Model for sentiment analysis
-sentiment_analyzer = AustralianNLPModel(
-    vocab_size=50000,
-    embed_dim=300, 
-    hidden_dim=256,
-    output_dim=len(sentiment_labels),
-    dropout_rate=0.1
-)
+# Example usage demonstrating OOP + helper functions approach
+if __name__ == "__main__":
+    # ✅ PREFERRED: Using helper functions and OOP patterns
+    device, device_info = detect_optimal_device()
+    print(f"Using {device_info}")
+    
+    # Create models using helper functions
+    city_classifier = create_australian_city_classifier(vocab_size=50000, device=device)
+    sentiment_analyzer = create_australian_sentiment_analyzer(vocab_size=50000, device=device)
+    
+    print(f"City classifier parameters: {sum(p.numel() for p in city_classifier.parameters()):,}")
+    print(f"Sentiment analyzer parameters: {sum(p.numel() for p in sentiment_analyzer.parameters()):,}")
+    
+    # Test with sample data
+    sample_input = torch.randint(0, 50000, (4, 100), device=device)  # 4 samples, 100 tokens each
+    
+    # Validate Australian context (helper function)
+    sample_texts = [
+        "Sydney Opera House is magnificent",
+        "Melbourne coffee culture is amazing", 
+        "Brisbane river views are beautiful",
+        "Perth beaches are pristine"
+    ]
+    
+    for text in sample_texts:
+        context_validation = validate_australian_context(text)
+        print(f"Text: '{text}' - Australian context: {context_validation['is_australian_context']}")
 
-print(f"City classifier: {sum(p.numel() for p in city_classifier.parameters())} parameters")
-print(f"Sentiment analyzer: {sum(p.numel() for p in sentiment_analyzer.parameters())} parameters")
+print(f"✅ Updated code templates demonstrate preferred OOP + helper functions approach!")
 ```
 
-**Standard dataset creation template for Australian/Vietnamese NLP:**
+**UPDATED: OOP-based dataset template with helper functions (following new policies):**
+
 ```python
 from torch.utils.data import Dataset, DataLoader
 import torch
 import torch.nn.functional as F
 import pandas as pd
+from typing import Dict, List, Tuple, Optional, Any, Union
+from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
-class AustralianMultilingualDataset(Dataset):
+# Helper functions for data processing (following helper functions policy)
+def validate_multilingual_pair(en_text: str, vi_text: str) -> Dict[str, bool]:
     """
-    Custom PyTorch Dataset for Australian NLP tasks with English-Vietnamese support.
+    Helper function to validate English-Vietnamese text pairs.
+    
+    Args:
+        en_text: English text
+        vi_text: Vietnamese text
+        
+    Returns:
+        Dictionary with validation results
+    """
+    return {
+        'both_not_empty': len(en_text.strip()) > 0 and len(vi_text.strip()) > 0,
+        'reasonable_length': 5 <= len(en_text.split()) <= 100 and 5 <= len(vi_text.split()) <= 100,
+        'valid_pair': len(en_text.strip()) > 0 and len(vi_text.strip()) > 0
+    }
+
+def detect_text_language(text: str) -> str:
+    """
+    Helper function to detect if text is primarily English or Vietnamese.
+    
+    Args:
+        text: Input text to analyze
+        
+    Returns:
+        Detected language ('en', 'vi', or 'unknown')
+    """
+    # Simple heuristic based on character patterns
+    vietnamese_chars = 'àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ'
+    vietnamese_count = sum(1 for char in text.lower() if char in vietnamese_chars)
+    
+    if vietnamese_count > len(text) * 0.05:  # 5% threshold
+        return 'vi'
+    elif any(ord(char) < 128 for char in text):  # ASCII characters
+        return 'en'
+    else:
+        return 'unknown'
+
+def extract_australian_entities(text: str) -> Dict[str, List[str]]:
+    """
+    Helper function to extract Australian entities from text.
+    
+    Args:
+        text: Input text to analyze
+        
+    Returns:
+        Dictionary with extracted entities
+    """
+    text_lower = text.lower()
+    
+    australian_cities = ["sydney", "melbourne", "brisbane", "perth", "adelaide", "darwin", "hobart", "canberra"]
+    landmarks = ["opera house", "harbour bridge", "uluru", "great barrier reef", "bondi beach"]
+    
+    found_cities = [city for city in australian_cities if city in text_lower]
+    found_landmarks = [landmark for landmark in landmarks if landmark in text_lower]
+    
+    return {
+        'cities': found_cities,
+        'landmarks': found_landmarks,
+        'has_australian_content': len(found_cities) > 0 or len(found_landmarks) > 0
+    }
+
+@dataclass
+class DatasetConfig:
+    """Configuration class for dataset parameters (OOP design pattern)."""
+    max_length: int = 512
+    padding: str = "max_length"
+    truncation: bool = True
+    return_tensors: str = "pt"
+    australian_context_required: bool = True
+    multilingual_support: bool = True
+    supported_languages: List[str] = None
+    
+    def __post_init__(self):
+        if self.supported_languages is None:
+            self.supported_languages = ["en", "vi"]
+
+# Abstract base class for different dataset types (OOP inheritance pattern)
+class BaseAustralianDataset(Dataset, ABC):
+    """
+    Abstract base class for Australian NLP datasets.
+    
+    Implements common functionality using OOP inheritance pattern.
+    Concrete subclasses implement specific dataset logic.
+    """
+    
+    def __init__(self, config: DatasetConfig, tokenizer=None):
+        self.config = config
+        self.tokenizer = tokenizer
+        self.australian_contexts = self._initialize_australian_contexts()
+    
+    def _initialize_australian_contexts(self) -> Dict[str, List[str]]:
+        """Helper method to initialize Australian context data."""
+        return {
+            'cities': ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Darwin", "Hobart", "Canberra"],
+            'landmarks': ["Opera House", "Harbour Bridge", "Uluru", "Great Barrier Reef", "Bondi Beach"],
+            'en_vi_pairs': [
+                ("Sydney beaches are beautiful", "Bãi biển Sydney rất đẹp"),
+                ("Melbourne has great coffee", "Melbourne có cà phê tuyệt vời"),
+                ("Perth is sunny year-round", "Perth nắng quanh năm"),
+                ("Brisbane river is scenic", "Sông Brisbane rất đẹp")
+            ]
+        }
+    
+    @abstractmethod
+    def _process_item(self, idx: int) -> Dict[str, Any]:
+        """Abstract method for processing individual items."""
+        pass
+    
+    def _validate_item(self, item: Dict[str, Any]) -> bool:
+        """Helper method to validate processed items."""
+        required_keys = ['text', 'label']
+        return all(key in item for key in required_keys)
+
+class AustralianMultilingualDataset(BaseAustralianDataset):
+    """
+    UPDATED: OOP-based dataset for Australian multilingual NLP tasks.
+    
+    Demonstrates preferred OOP patterns:
+    - Inherits from abstract base class
+    - Uses configuration objects
+    - Implements helper methods for common operations
+    - Encapsulates data processing logic
     
     Designed for:
     - Australian tourism content analysis
@@ -2064,36 +2684,243 @@ class AustralianMultilingualDataset(Dataset):
     - Sentiment analysis of Australian business reviews
     - Australian city/location classification
     
-    Args:
-        texts: List of texts (English and/or Vietnamese)
-        labels: List of corresponding labels
-        tokenizer: Tokenizer for text preprocessing (e.g., Hugging Face tokenizer)
-        max_length: Maximum sequence length
-        transform: Optional data transformations
-    
-    TensorFlow equivalent:
+    TensorFlow equivalent (procedural approach we avoid):
         dataset = tf.data.Dataset.from_tensor_slices((texts, labels))
         dataset = dataset.map(preprocess_function)
         dataset = dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
     
     Example:
-        >>> # Australian restaurant reviews in English and Vietnamese
-        >>> texts = [
-        >>>     "The Sydney restaurant serves excellent seafood",
-        >>>     "Nhà hàng ở Sydney phục vụ hải sản tuyệt vời",
-        >>>     "Melbourne coffee shops are overpriced",
-        >>>     "Quán cà phê Melbourne đắt quá"
-        >>> ]
-        >>> labels = [1, 1, 0, 0]  # 1=positive, 0=negative
-        >>> dataset = AustralianMultilingualDataset(texts, labels, tokenizer)
-        >>> dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
+        >>> config = DatasetConfig(max_length=256, australian_context_required=True)
+        >>> texts = ["Sydney restaurant serves excellent seafood", "Nhà hàng Sydney phục vụ hải sản tuyệt vời"]
+        >>> labels = [1, 1]  # positive sentiment
+        >>> dataset = AustralianMultilingualDataset(texts, labels, config, tokenizer)
+        >>> dataloader = create_australian_dataloader(dataset, batch_size=2)
     """
-    def __init__(self, texts, labels, tokenizer=None, max_length=512, transform=None):
-        self.texts = texts
-        self.labels = torch.LongTensor(labels) if isinstance(labels, list) else labels
-        self.tokenizer = tokenizer
-        self.max_length = max_length
+    
+    def __init__(self, texts: List[str], labels: List[int], config: DatasetConfig, tokenizer=None, transform=None):
+        super().__init__(config, tokenizer)
+        
+        # Data validation using helper functions
+        self.texts = self._validate_and_store_texts(texts)
+        self.labels = self._validate_and_store_labels(labels)
         self.transform = transform
+        
+        # Validate data consistency
+        self._validate_data_consistency()
+    
+    def _validate_and_store_texts(self, texts: List[str]) -> List[str]:
+        """Helper method to validate and store text data."""
+        if not texts:
+            raise ValueError("Text list cannot be empty")
+            
+        validated_texts = []
+        for i, text in enumerate(texts):
+            if not isinstance(text, str) or len(text.strip()) == 0:
+                raise ValueError(f"Text at index {i} is invalid: must be non-empty string")
+            
+            # Validate Australian context if required
+            if self.config.australian_context_required:
+                entities = extract_australian_entities(text)
+                if not entities['has_australian_content']:
+                    print(f"Warning: Text at index {i} lacks Australian context: '{text[:50]}...'")
+            
+            validated_texts.append(text.strip())
+        
+        return validated_texts
+    
+    def _validate_and_store_labels(self, labels: List[int]) -> torch.Tensor:
+        """Helper method to validate and store labels."""
+        if isinstance(labels, list):
+            return torch.LongTensor(labels)
+        elif isinstance(labels, torch.Tensor):
+            return labels.long()
+        else:
+            raise ValueError("Labels must be list or torch.Tensor")
+    
+    def _validate_data_consistency(self) -> None:
+        """Helper method to validate data consistency."""
+        if len(self.texts) != len(self.labels):
+            raise ValueError(f"Mismatch: {len(self.texts)} texts but {len(self.labels)} labels")
+    
+    def __len__(self) -> int:
+        return len(self.texts)
+    
+    def _process_item(self, idx: int) -> Dict[str, Any]:
+        """Process individual item using helper methods."""
+        text = self.texts[idx]
+        label = self.labels[idx]
+        
+        # Language detection using helper function
+        language = detect_text_language(text)
+        
+        # Entity extraction using helper function
+        entities = extract_australian_entities(text)
+        
+        return {
+            'text': text,
+            'label': label,
+            'language': language,
+            'entities': entities,
+            'index': idx
+        }
+    
+    def _tokenize_text(self, text: str) -> Dict[str, torch.Tensor]:
+        """Helper method for text tokenization."""
+        if self.tokenizer:
+            return self.tokenizer(
+                text,
+                truncation=self.config.truncation,
+                padding=self.config.padding,
+                max_length=self.config.max_length,
+                return_tensors=self.config.return_tensors
+            )
+        else:
+            # Fallback: character-level encoding
+            char_ids = torch.tensor([ord(c) for c in text[:self.config.max_length]], dtype=torch.long)
+            if len(char_ids) < self.config.max_length:
+                padding = torch.zeros(self.config.max_length - len(char_ids), dtype=torch.long)
+                char_ids = torch.cat([char_ids, padding])
+            return {'input_ids': char_ids}
+    
+    def __getitem__(self, idx: int) -> Dict[str, Any]:
+        """Get item using helper methods for clean organization."""
+        # Process item using helper method
+        item = self._process_item(idx)
+        
+        # Tokenize using helper method
+        tokenized = self._tokenize_text(item['text'])
+        
+        # Apply transforms if specified
+        if self.transform:
+            tokenized = self.transform(tokenized)
+        
+        # Combine results
+        result = {
+            'input_ids': tokenized['input_ids'].squeeze() if 'input_ids' in tokenized else None,
+            'attention_mask': tokenized.get('attention_mask', torch.ones_like(tokenized['input_ids'])).squeeze(),
+            'labels': item['label'],
+            'language': item['language'],
+            'australian_entities': item['entities'],
+            'original_text': item['text']
+        }
+        
+        return result
+
+# Helper function for creating specialized datasets (factory pattern)
+def create_australian_sentiment_dataset(texts: List[str], sentiments: List[str], tokenizer, config: Optional[DatasetConfig] = None) -> AustralianMultilingualDataset:
+    """
+    Helper function to create sentiment analysis dataset.
+    
+    Args:
+        texts: List of texts
+        sentiments: List of sentiment labels ('positive', 'negative', 'neutral')
+        tokenizer: Tokenizer for text processing
+        config: Optional dataset configuration
+        
+    Returns:
+        Configured dataset for sentiment analysis
+    """
+    if config is None:
+        config = DatasetConfig(max_length=256, australian_context_required=True)
+    
+    # Convert sentiment strings to integers using helper function
+    sentiment_to_id = {'positive': 0, 'negative': 1, 'neutral': 2}
+    label_ids = [sentiment_to_id.get(sent.lower(), 2) for sent in sentiments]  # default to neutral
+    
+    return AustralianMultilingualDataset(texts, label_ids, config, tokenizer)
+
+# Helper function for DataLoader creation (factory pattern)
+def create_australian_dataloader(dataset: Dataset, batch_size: int = 32, shuffle: bool = True, num_workers: int = 0) -> DataLoader:
+    """
+    Helper function to create optimized DataLoader for Australian NLP tasks.
+    
+    Args:
+        dataset: PyTorch Dataset instance
+        batch_size: Batch size for training
+        shuffle: Whether to shuffle data
+        num_workers: Number of worker processes
+        
+    Returns:
+        Configured DataLoader with optimal settings
+    """
+    return DataLoader(
+        dataset, 
+        batch_size=batch_size, 
+        shuffle=shuffle, 
+        num_workers=num_workers,
+        pin_memory=torch.cuda.is_available(),  # GPU optimization
+        drop_last=True,  # Consistent batch sizes
+        collate_fn=None  # Can be customized if needed
+    )
+
+# Helper function for data analysis
+def analyze_dataset_statistics(dataset: AustralianMultilingualDataset) -> Dict[str, Any]:
+    """
+    Helper function to analyze dataset statistics.
+    
+    Args:
+        dataset: Dataset to analyze
+        
+    Returns:
+        Dictionary with dataset statistics
+    """
+    languages = []
+    australian_content_count = 0
+    text_lengths = []
+    
+    for i in range(len(dataset)):
+        item = dataset[i]
+        languages.append(item['language'])
+        if item['australian_entities']['has_australian_content']:
+            australian_content_count += 1
+        text_lengths.append(len(item['original_text'].split()))
+    
+    from collections import Counter
+    return {
+        'total_samples': len(dataset),
+        'language_distribution': dict(Counter(languages)),
+        'australian_content_ratio': australian_content_count / len(dataset),
+        'avg_text_length': sum(text_lengths) / len(text_lengths),
+        'text_length_range': (min(text_lengths), max(text_lengths))
+    }
+
+# Example usage demonstrating OOP + helper functions approach
+if __name__ == "__main__":
+    # Sample data with Australian context
+    sample_texts = [
+        "Sydney Opera House is a UNESCO World Heritage site",
+        "Nhà hát Opera Sydney là di sản thế giới UNESCO",
+        "Melbourne's coffee culture is internationally renowned", 
+        "Văn hóa cà phê Melbourne nổi tiếng quốc tế",
+        "The Great Barrier Reef needs protection",
+        "Rạn san hô Great Barrier Reef cần được bảo vệ"
+    ]
+    
+    sample_sentiments = ["positive", "positive", "positive", "positive", "neutral", "neutral"]
+    
+    # ✅ PREFERRED: Using OOP + helper functions
+    config = DatasetConfig(max_length=128, australian_context_required=True)
+    
+    # Create dataset using helper function
+    dataset = create_australian_sentiment_dataset(sample_texts, sample_sentiments, tokenizer=None, config=config)
+    
+    # Create dataloader using helper function
+    dataloader = create_australian_dataloader(dataset, batch_size=2, shuffle=True)
+    
+    # Analyze dataset using helper function
+    stats = analyze_dataset_statistics(dataset)
+    
+    print("✅ Dataset created with OOP + helper functions approach!")
+    print(f"Dataset statistics: {stats}")
+    print(f"Number of batches: {len(dataloader)}")
+    
+    # Test iteration
+    for batch_idx, batch in enumerate(dataloader):
+        print(f"Batch {batch_idx}: {batch['input_ids'].shape if batch['input_ids'] is not None else 'None'}")
+        if batch_idx == 0:  # Show first batch details
+            break
+
+print("✅ Updated dataset template demonstrates preferred OOP + helper functions approach!")
         
         # Sample Australian context data for demonstration
         self.australian_contexts = {
